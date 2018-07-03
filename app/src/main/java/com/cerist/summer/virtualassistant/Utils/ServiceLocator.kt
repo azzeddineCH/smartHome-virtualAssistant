@@ -11,6 +11,7 @@ import com.cerist.summer.virtualassistant.Repositories.LampRepository
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.scan.ScanFilter
+import io.reactivex.BackpressureStrategy
 import io.reactivex.Maybe
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -49,14 +50,13 @@ class DefaultServiceLocator (val context:Context): ServiceLocator {
     companion object {
         val TAG = "DefaultServiceLocator"
     }
-    var blueToothClient: RxBleClient
+    var blueToothClient = RxBleClient.create(context)
     private val BLUETOOTH_IO = Executors.newFixedThreadPool(2)
     private val NETWORK_IO = Executors.newFixedThreadPool(2)
     private var lampBleDevice: Observable<RxBleDevice>
     private var broadLinkBleDevice: Observable<RxBleDevice> ?= null
 
     init {
-        blueToothClient = RxBleClient.create(context)
 
         lampBleDevice = blueToothClient.scanBleDevices(
                 ScanSettings.Builder()
@@ -65,9 +65,10 @@ class DefaultServiceLocator (val context:Context): ServiceLocator {
                 ScanFilter.Builder()
                         .setDeviceAddress(LampProfile.DEVICE_MAC_ADDRESS)
                         .build()
-        ).observeOn(Schedulers.from(getBlueToothExecutor()))
-                .firstElement()
+        ).toFlowable(BackpressureStrategy.LATEST)
                 .toObservable()
+                .observeOn(Schedulers.from(getBlueToothExecutor()))
+                .take(1)
                 .flatMap { result ->
                     Log.d(TAG,"the device named ${result.bleDevice.name} is found")
                     Observable.just(result.bleDevice)
