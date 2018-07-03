@@ -7,7 +7,6 @@ import com.polidea.rxandroidble2.RxBleDevice
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.observables.ConnectableObservable
 import io.reactivex.schedulers.Schedulers
 import java.util.*
@@ -19,15 +18,15 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
         val TAG = "LampRepository"
     }
 
-    private val  lampBleConnection: ConnectableObservable<RxBleConnection>
-    private val  lampConnectionState:Observable<RxBleConnection.RxBleConnectionState>
-    private val  lampLightningState:Observable<LampProfile.LAMP_STATE>
-    private val  lampLuminosity:Observable<LampProfile.LAMP_LUMINOSITY>
+    private val  mLampBleConnection: ConnectableObservable<RxBleConnection>
+    private val  mLampConnectionState:Observable<RxBleConnection.RxBleConnectionState>
+    private val  mLampLightningState:Observable<LampProfile.LAMP_STATE>
+    private val  mLampLuminosityLevel:Observable<LampProfile.LAMP_LUMINOSITY>
 
 
     init {
 
-        lampBleConnection =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
+        mLampBleConnection =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
                                           .subscribeOn(AndroidSchedulers.mainThread())
                                           .flatMap {
                                                   Log.d(TAG,"connecting to the GATT server named ${it.name}")
@@ -35,7 +34,7 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
                                           }.publish()
 
 
-        lampConnectionState =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
+        mLampConnectionState =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
                                             .subscribeOn(AndroidSchedulers.mainThread())
                                             .flatMap {
                                                         Log.d(TAG,"start to observe the connection state with ${it.name}: ${it.connectionState.name}")
@@ -43,7 +42,7 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
                                              }
 
 
-        lampLightningState =   lampBleConnection.observeOn(Schedulers.from(bluetoothExecutor))
+        mLampLightningState =   mLampBleConnection.observeOn(Schedulers.from(bluetoothExecutor))
                                                 .subscribeOn(AndroidSchedulers.mainThread())
                                                 .flatMap {
                                                         Log.d(TAG,"reading from the Characteristic")
@@ -61,7 +60,7 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
                                                     }}
 
 
-        lampLuminosity = lampBleConnection.observeOn(Schedulers.from(bluetoothExecutor))
+        mLampLuminosityLevel = mLampBleConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap { 
                     it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
@@ -82,22 +81,22 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
 
 
 
-         lampConnectionState.subscribe {
+         mLampConnectionState.subscribe {
             Log.d(TAG,"connecting to the GATT server named ${it.name}")
-            if(it == RxBleConnection.RxBleConnectionState.CONNECTED) lampBleConnection.connect()
+            if(it == RxBleConnection.RxBleConnectionState.CONNECTED) mLampBleConnection.connect()
         }
 
-       //  lampBleConnection.connect()
+         mLampBleConnection.connect()
 
     }
 
 
 
-    fun getLampConnectionState() = lampConnectionState
+    fun getLampConnectionState() = mLampConnectionState
 
-    fun getLampLightningState() = lampLightningState
+    fun getLampLightningState() = mLampLightningState
 
-    fun getLampLuminosityLevel() = lampLuminosity
+    fun getLampLuminosityLevel() = mLampLuminosityLevel
 
     fun setLampLightningState(state: LampProfile.LAMP_STATE): Observable<LampProfile.LAMP_STATE> {
         val i: Byte = when (state) {
@@ -105,7 +104,7 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
             LampProfile.LAMP_STATE.ON -> 1
         }
 
-        return lampBleConnection!!
+        return mLampBleConnection
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
                     it.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID), byteArrayOf(i)).toObservable()
@@ -134,7 +133,7 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
             LampProfile.LAMP_LUMINOSITY.MAX -> 4
         }
 
-        return lampBleConnection!!
+        return mLampBleConnection!!
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
                     it.writeCharacteristic(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID, byteArrayOf(i)).toObservable()

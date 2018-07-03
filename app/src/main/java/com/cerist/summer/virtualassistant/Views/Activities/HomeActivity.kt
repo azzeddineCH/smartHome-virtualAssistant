@@ -31,10 +31,10 @@ class HomeActivity:AppCompatActivity(){
           //  Log.d("HomeActivity","state ${it?.name}")
         //})
 
-        model.getLampLumonisitiyLevelLiveData().observe(this, Observer<LampProfile.LAMP_LUMINOSITY>{
-            Log.d("HomeActivity","state ${it?.name}")
-        })
+       // model.getLampLumonisitiyLevelLiveData().observe(this, Observer<LampProfile.LAMP_LUMINOSITY>{
+       //     Log.d("HomeActivity","state ${it?.name}")
+     //   })
 
-
+    model.setLampLightningState(LampProfile.LAMP_STATE.ON)
     }
 }
