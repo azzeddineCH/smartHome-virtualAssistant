@@ -4,8 +4,7 @@ import android.arch.lifecycle.Observer
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import com.cerist.summer.virtualassistant.Entities.LampProfile
-import com.cerist.summer.virtualassistant.Extentions.getViewModel
+import com.cerist.summer.virtualassistant.Utils.getViewModel
 import com.cerist.summer.virtualassistant.R
 import com.cerist.summer.virtualassistant.Utils.Repositories
 import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
@@ -27,14 +26,5 @@ class HomeActivity:AppCompatActivity(){
         })
 
 
-        //model.getLampLightningStateLiveData().observe(this, Observer<LampProfile.LAMP_STATE>{
-          //  Log.d("HomeActivity","state ${it?.name}")
-        //})
-
-       // model.getLampLumonisitiyLevelLiveData().observe(this, Observer<LampProfile.LAMP_LUMINOSITY>{
-       //     Log.d("HomeActivity","state ${it?.name}")
-     //   })
-
-    model.setLampLightningState(LampProfile.LAMP_STATE.ON)
     }
 }

@@ -1,9 +1,8 @@
 package com.cerist.summer.virtualassistant.Utils
 
+import android.app.Activity
 import  com.polidea.rxandroidble2.scan.ScanSettings
-import android.content.Context
 import android.util.Log
-import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.cerist.summer.virtualassistant.Repositories.BroadLinkRepository
 import com.cerist.summer.virtualassistant.Repositories.IRepository
@@ -11,15 +10,12 @@ import com.cerist.summer.virtualassistant.Repositories.LampRepository
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.scan.ScanFilter
+import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Maybe
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import kotlin.math.log
 
 enum class BleDevices{
     BROAD_LINK,
@@ -33,8 +29,11 @@ enum class Repositories{
 
 interface ServiceLocator{
     companion object {
+        val TAG = "ServiceLocator"
+
+
         private var instance:ServiceLocator?=null
-        public fun instance(context: Context):ServiceLocator{
+        fun instance(context: Activity):ServiceLocator{
             if(instance == null) instance = DefaultServiceLocator(context)
             return instance!!
         }
@@ -46,11 +45,15 @@ interface ServiceLocator{
     fun getRepository(key:Repositories):IRepository
 }
 
-class DefaultServiceLocator (val context:Context): ServiceLocator {
+    class DefaultServiceLocator (val activity:Activity): ServiceLocator {
     companion object {
         val TAG = "DefaultServiceLocator"
     }
-    var blueToothClient = RxBleClient.create(context)
+
+
+    var blueToothClient = RxBleClient.create(activity)
+    var rxPermissions = RxPermissions(activity)
+
     private val BLUETOOTH_IO = Executors.newFixedThreadPool(2)
     private val NETWORK_IO = Executors.newFixedThreadPool(2)
     private var lampBleDevice: Observable<RxBleDevice>
@@ -58,14 +61,28 @@ class DefaultServiceLocator (val context:Context): ServiceLocator {
 
     init {
 
-        lampBleDevice = blueToothClient.scanBleDevices(
-                ScanSettings.Builder()
-                        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                        .build(),
-                ScanFilter.Builder()
-                        .setDeviceAddress(LampProfile.DEVICE_MAC_ADDRESS)
-                        .build()
-        ).toFlowable(BackpressureStrategy.LATEST)
+        lampBleDevice =  blueToothClient.observeStateChanges()
+                .switchMap {
+                    when(it){
+                        RxBleClient.State.READY->
+                                Observable.just(true)
+                        RxBleClient.State.LOCATION_PERMISSION_NOT_GRANTED ->
+                            requestLocationPermissions(activity = activity)
+                        RxBleClient.State.BLUETOOTH_NOT_ENABLED ->
+                            Observable.just(false)
+                        RxBleClient.State.LOCATION_SERVICES_NOT_ENABLED ->
+                            Observable.just(false)
+                        else -> Observable.just(false)
+                    }}
+                .filter { it == true }
+                .flatMap {    blueToothClient.scanBleDevices(
+                        ScanSettings.Builder()
+                                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                                .build(),
+                        ScanFilter.Builder()
+                                .setDeviceAddress(LampProfile.DEVICE_MAC_ADDRESS)
+                                .build())}
+                .toFlowable(BackpressureStrategy.LATEST)
                 .toObservable()
                 .observeOn(Schedulers.from(getBlueToothExecutor()))
                 .take(1)

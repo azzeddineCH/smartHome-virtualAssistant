@@ -1,18 +1,15 @@
-package com.cerist.summer.virtualassistant.Extentions
+package com.cerist.summer.virtualassistant.Utils
 
+import android.app.Activity
 import android.arch.lifecycle.*
 import android.content.Context
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import com.cerist.summer.virtualassistant.Repositories.IRepository
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
-import com.cerist.summer.virtualassistant.Utils.Repositories
-import com.cerist.summer.virtualassistant.Utils.ServiceLocator
 import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
-import java.util.*
 
 fun <T> Observable<T>.toLiveData(backPressureStrategy: BackpressureStrategy =
                                                     BackpressureStrategy.LATEST) :  LiveData<T> {
@@ -24,7 +21,7 @@ fun Fragment.getViewModel(type:Repositories): ViewModel {
 
     return ViewModelProviders.of(this, object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val repo = ServiceLocator.instance(context!!)
+            val repo = ServiceLocator.instance(activity!!)
                     .getRepository(type)
             @Suppress("UNCHECKED_CAST")
             return when(type){
@@ -40,11 +37,11 @@ fun Fragment.getViewModel(type:Repositories): ViewModel {
 
 }
 
-fun AppCompatActivity.getViewModel(context:Context,type:Repositories): ViewModel {
+fun AppCompatActivity.getViewModel(activity:Activity,type:Repositories): ViewModel {
 
     return ViewModelProviders.of(this, object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            val repo = ServiceLocator.instance(context)
+            val repo = ServiceLocator.instance(activity)
                     .getRepository(type)
             @Suppress("UNCHECKED_CAST")
             return when(type){

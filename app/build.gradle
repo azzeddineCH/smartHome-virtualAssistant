@@ -49,5 +49,5 @@ dependencies {
     compile "com.polidea.rxandroidble2:rxandroidble:1.6.0"
 
     //RxJava for permissions
-    compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.5@aar'
+    implementation 'com.github.tbruyelle:rxpermissions:0.10.0'
 }

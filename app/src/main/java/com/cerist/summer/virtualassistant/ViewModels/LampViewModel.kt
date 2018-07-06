@@ -3,7 +3,7 @@ package com.cerist.summer.virtualassistant.ViewModels
 import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.LampProfile
-import com.cerist.summer.virtualassistant.Extentions.toLiveData
+import com.cerist.summer.virtualassistant.Utils.toLiveData
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
 import io.reactivex.disposables.CompositeDisposable
 

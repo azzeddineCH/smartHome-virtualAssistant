@@ -81,11 +81,6 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
 
 
 
-         mLampConnectionState.subscribe {
-            Log.d(TAG,"connecting to the GATT server named ${it.name}")
-            if(it == RxBleConnection.RxBleConnectionState.CONNECTED) mLampBleConnection.connect()
-        }
-
          mLampBleConnection.connect()
 
     }
