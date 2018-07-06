@@ -1,6 +1,7 @@
 package com.cerist.summer.virtualassistant.Utils
 
 import android.app.Activity
+import android.support.v4.app.FragmentActivity
 import  com.polidea.rxandroidble2.scan.ScanSettings
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.LampProfile
@@ -34,7 +35,7 @@ interface ServiceLocator{
 
 
         private var instance:ServiceLocator?=null
-        fun instance(context: Activity):ServiceLocator{
+        fun instance(context: FragmentActivity):ServiceLocator{
             if(instance == null) instance = DefaultServiceLocator(context)
             return instance!!
         }
@@ -46,7 +47,7 @@ interface ServiceLocator{
     fun getRepository(key:Repositories):IRepository
 }
 
-    class DefaultServiceLocator (val activity:Activity): ServiceLocator {
+    class DefaultServiceLocator (val activity: FragmentActivity): ServiceLocator {
 
         companion object {
         val TAG = "DefaultServiceLocator"

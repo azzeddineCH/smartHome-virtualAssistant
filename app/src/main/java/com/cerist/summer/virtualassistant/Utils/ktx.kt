@@ -4,6 +4,7 @@ import android.app.Activity
 import android.arch.lifecycle.*
 import android.content.Context
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentActivity
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
@@ -37,7 +38,7 @@ fun Fragment.getViewModel(type:Repositories): ViewModel {
 
 }
 
-fun AppCompatActivity.getViewModel(activity:Activity,type:Repositories): ViewModel {
+fun AppCompatActivity.getViewModel(activity:FragmentActivity,type:Repositories): ViewModel {
 
     return ViewModelProviders.of(this, object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

@@ -1,10 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.cerist.summer.virtualassistant">
 
-    <uses-permissionsCheck android:name="android.permissionsCheck.BLUETOOTH"/>
-    <uses-permissionsCheck android:name="android.permissionsCheck.BLUETOOTH_ADMIN"/>
-    <uses-permissionsCheck android:name="android.permissionsCheck.ACCESS_FINE_LOCATION"/>
-    <uses-permissionsCheck android:name="android.permissionsCheck.ACCESS_COARSE_LOCATION"/>
+
 
     <application
         android:allowBackup="true"
