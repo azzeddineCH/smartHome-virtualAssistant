@@ -22,7 +22,6 @@ class HomeActivity:AppCompatActivity(){
 
         model.lampBleConnectionState?.observe(this, Observer<RxBleConnection.RxBleConnectionState>{
            Log.d("HomeActivity","connection ${it?.name}")
-
         })
 
 

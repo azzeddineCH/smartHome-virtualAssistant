@@ -13,6 +13,7 @@ import com.polidea.rxandroidble2.scan.ScanFilter
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
@@ -46,7 +47,8 @@ interface ServiceLocator{
 }
 
     class DefaultServiceLocator (val activity:Activity): ServiceLocator {
-    companion object {
+
+        companion object {
         val TAG = "DefaultServiceLocator"
     }
 
@@ -61,7 +63,7 @@ interface ServiceLocator{
 
     init {
 
-        lampBleDevice =  blueToothClient.observeStateChanges()
+        val permissionsCheck = blueToothClient.observeStateChanges()
                 .switchMap {
                     when(it){
                         RxBleClient.State.READY->
@@ -74,7 +76,10 @@ interface ServiceLocator{
                             Observable.just(false)
                         else -> Observable.just(false)
                     }}
-                .filter { it == true }
+                .filter { it }
+
+        lampBleDevice = permissionsCheck
+                .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {    blueToothClient.scanBleDevices(
                         ScanSettings.Builder()
                                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
