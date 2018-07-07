@@ -15,7 +15,7 @@ class LampProfile{
 
     enum class LAMP_STATE(s: String) {
         ON("ON"),
-        OFF("ON")
+        OFF("OFF")
     }
 
     enum class LAMP_LUMINOSITY(s:String) {

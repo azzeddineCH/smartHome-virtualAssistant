@@ -103,7 +103,8 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
 
     fun getLampLuminosityLevel() = mLampLuminosityLevel
 
-    fun setLampLightningState(state: LampProfile.LAMP_STATE): Observable<Resource<LampProfile.LAMP_STATE>> {
+    fun setLampLightningState(state: LampProfile.LAMP_STATE):
+            Observable<Resource<LampProfile.LAMP_STATE>> {
         val i: Byte = when (state) {
             LampProfile.LAMP_STATE.OFF -> 0
             LampProfile.LAMP_STATE.ON -> 1
@@ -132,7 +133,8 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
 
     }
 
-    fun getLampLuminosityLevel(level: LampProfile.LAMP_LUMINOSITY): Observable<Resource<LampProfile.LAMP_LUMINOSITY>> {
+    fun setLampLuminosityLevel(level: LampProfile.LAMP_LUMINOSITY):
+            Observable<Resource<LampProfile.LAMP_LUMINOSITY>> {
         val i: Byte = when (level) {
             LampProfile.LAMP_LUMINOSITY.NON -> 0
             LampProfile.LAMP_LUMINOSITY.LOW -> 1
