@@ -8,41 +8,41 @@ class BroadLinkProfile{
         val DEVICE_MAC_ADDRESS ="B8:27:EB:AA:D6:51"
     }
 
-    class AirConditionarProfile{
+    class AirConditionerProfile{
 
         companion object {
 
-         val DEVICE_SERVICE_UUID =  ""
-
-        val STATE_CHARACTERISTIC_UUID = ""
-        val MODE_CHARACTERISTIC_UUID = ""
-        val TEMPERATURE_CHARACTERISTIC_UUID = ""
+            const val DEVICE_SERVICE_UUID =  ""
+            const val STATE_CHARACTERISTIC_UUID = ""
+            const val MODE_CHARACTERISTIC_UUID = ""
+            const val TEMPERATURE_CHARACTERISTIC_UUID = ""
+            const val MAX_TEMP = 30
+            const val MIN_TEMP = 17
         }
 
-        enum class AIR_CONDITIONAR_STATE(s: String) {
-            ON("ON"),
-            OFF("OFF")
+        enum class State(val value: Int) {
+            ON(1),
+            OFF(0)
         }
-
-        enum class AIR_CONDITIONAR_MODE(s: String) {
-            AUTO("ON"),
-            DRY("DRY"),
-            HEAT("HEAT")
+        enum class Mode(val value: Int) {
+            COOL(3),
+            FUN(2),
+            ENERGY_SAVER(1),
+            SLEEP(0)
         }
     }
 
     class TvProfile{
         companion object {
-        val DEVICE_SERVICE_UUID= ""
-        val STATE_CHARACTERISTIC_UUID = ""
-        val VOLUME_CHARACTERISTIC_UUID = ""
-            val maxVolume = 100
-            val minVolume = 0
+            const val DEVICE_SERVICE_UUID= ""
+            const val STATE_CHARACTERISTIC_UUID = ""
+            const val VOLUME_CHARACTERISTIC_UUID = ""
+            const val MAX_VOLUME = 99
+            const val MIN_VOLUME = 0
         }
-
-        enum class TV_STATE(s: String) {
-            ON("ON"),
-            OFF("OFF")
+        enum class State(val value: Int) {
+            ON(1),
+            OFF(2)
         }
     }
 }

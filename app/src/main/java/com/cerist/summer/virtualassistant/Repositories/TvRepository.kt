@@ -13,17 +13,17 @@ import io.reactivex.schedulers.Schedulers
 import java.util.*
 import java.util.concurrent.Executor
 
-class TvRepositroy(val broadLink: Observable<RxBleDevice>,
+class TvRepository(val broadLink: Observable<RxBleDevice>,
                    val bluetoothExecutor: Executor) : IRepository {
 
     companion object {
-        val TAG = "TvRepositroy"
+        val TAG = "TvRepository"
     }
 
     private val  mBroadLinkConnection: ConnectableObservable<RxBleConnection>
     private val  mBroadLinkConnectionState:Observable<RxBleConnection.RxBleConnectionState>
 
-    private val  mTvPowerState:Observable<Resource<BroadLinkProfile.TvProfile.TV_STATE>>
+    private val  mState:Observable<Resource<BroadLinkProfile.TvProfile.State>>
     private val  mTvVolumeLevel:Observable<Resource<Int>>
 
     init {
@@ -32,7 +32,8 @@ class TvRepositroy(val broadLink: Observable<RxBleDevice>,
                 .flatMap {
                     Log.d(LampRepository.TAG,"connecting to the GATT server named ${it.name}")
                     it.establishConnection(false)
-                }.publish()
+                }
+                .publish()
 
         mBroadLinkConnectionState =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
@@ -42,7 +43,7 @@ class TvRepositroy(val broadLink: Observable<RxBleDevice>,
                 }
 
 
-        mTvPowerState =   mBroadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
+        mState =   mBroadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(LampRepository.TAG,"reading from the Characteristic")
@@ -51,10 +52,10 @@ class TvRepositroy(val broadLink: Observable<RxBleDevice>,
                 .flatMap { bytes ->
                     Observable.just(bytes[0].toInt()) }
                 .flatMap { value ->
-                    Observable.create { e: ObservableEmitter<Resource<BroadLinkProfile.TvProfile.TV_STATE>> ->
+                    Observable.create { e: ObservableEmitter<Resource<BroadLinkProfile.TvProfile.State>> ->
                         when (value) {
-                            0 -> e.onNext(Resource.success(BroadLinkProfile.TvProfile.TV_STATE.OFF))
-                            1 ->  e.onNext(Resource.success(BroadLinkProfile.TvProfile.TV_STATE.ON))
+                            0 -> e.onNext(Resource.success(BroadLinkProfile.TvProfile.State.OFF))
+                            1 ->  e.onNext(Resource.success(BroadLinkProfile.TvProfile.State.ON))
                             else -> e.onNext(Resource.error("unknown value",null))
                         }
                     }}
@@ -73,11 +74,11 @@ class TvRepositroy(val broadLink: Observable<RxBleDevice>,
                     Observable.just(bytes[0].toInt()) }
                 .flatMap { volume ->
                     Observable.create { e: ObservableEmitter<Resource<Int>> ->
-                      if(volume in BroadLinkProfile.TvProfile.minVolume
-                                           ..BroadLinkProfile.TvProfile.maxVolume)
+                      if(volume in BroadLinkProfile.TvProfile.MIN_VOLUME
+                                           ..BroadLinkProfile.TvProfile.MAX_VOLUME)
                           e.onNext(Resource.success(volume))
                             else
-                          e.onNext(Resource.error("unknown value",null))
+                          e.onError(Throwable("inappropriate value"))
                         }
                     }
                 .onErrorReturn { t:Throwable ->
@@ -86,29 +87,26 @@ class TvRepositroy(val broadLink: Observable<RxBleDevice>,
     }
 
     fun getTvConnectionState() = mBroadLinkConnectionState
-    fun getTvPowerState() = mTvPowerState
+    fun getTvPowerState() = mState
     fun getTvVolumLevel() = mTvVolumeLevel
 
-    fun setTvPowerState(state:BroadLinkProfile.TvProfile.TV_STATE)
-                    :Observable<Resource<BroadLinkProfile.TvProfile.TV_STATE>>{
-        val i: Byte = when (state) {
-            BroadLinkProfile.TvProfile.TV_STATE.OFF -> 0
-            BroadLinkProfile.TvProfile.TV_STATE.ON -> 1
-        }
-        return mBroadLinkConnection
+    fun setTvPowerState(state: BroadLinkProfile.TvProfile.State)
+            = mBroadLinkConnection
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
                     it.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID),
-                            byteArrayOf(i)).toObservable()
-                }.flatMap { bytes ->
+                            byteArrayOf(state.value.toByte())).toObservable()
+                }
+                .flatMap { bytes ->
                     Observable.create { e: ObservableEmitter<Int> ->
                         e.onNext(bytes[0].toInt())
                     }
-                }.flatMap { value ->
-                    Observable.create { e: ObservableEmitter<Resource<BroadLinkProfile.TvProfile.TV_STATE>> ->
+                }
+                .flatMap { value ->
+                    Observable.create { e: ObservableEmitter<Resource<BroadLinkProfile.TvProfile.State>> ->
                         when (value) {
-                            0 -> e.onNext(Resource.success(BroadLinkProfile.TvProfile.TV_STATE.OFF))
-                            1 ->  e.onNext(Resource.success(BroadLinkProfile.TvProfile.TV_STATE.ON))
+                            0 -> e.onNext(Resource.success(BroadLinkProfile.TvProfile.State.OFF))
+                            1 ->  e.onNext(Resource.success(BroadLinkProfile.TvProfile.State.ON))
                             else -> e.onNext(Resource.error("unknown value",null))
                         }
                     }
@@ -117,36 +115,30 @@ class TvRepositroy(val broadLink: Observable<RxBleDevice>,
                     Resource.error("${t.message}",null)
                 }
 
-    }
 
-    fun setTvVolumeLevel(volume:Byte)
-            :Observable<Resource<Int>>{
-
-            if(volume !in BroadLinkProfile.TvProfile.minVolume ..
-                    BroadLinkProfile.TvProfile.maxVolume)
-                return Observable.just(
-                    Resource.error("inappropriate value",null)
-            )
-        return mBroadLinkConnection
+    fun setTvVolumeLevel(volume:Int)
+          = mBroadLinkConnection
                 .observeOn(Schedulers.from(bluetoothExecutor))
+                .flatMap { Observable.create { e: ObservableEmitter<RxBleConnection> ->
+                    if(volume in BroadLinkProfile.TvProfile.MIN_VOLUME
+                            .. BroadLinkProfile.TvProfile.MAX_VOLUME)
+                        e.onNext(it)
+                    else
+                        e.onError(Throwable("inappropriate value",null))
+                } }
                 .flatMap {
                     it.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_CHARACTERISTIC_UUID),
-                            byteArrayOf(volume)).toObservable()
-                }.flatMap { bytes ->
+                            byteArrayOf(volume.toByte())).toObservable()
+                }
+                .flatMap { bytes ->
                     Observable.create { e: ObservableEmitter<Int> ->
                         e.onNext(bytes[0].toInt())
                     }
-                }.flatMap { volume ->
-                    Observable.create { e: ObservableEmitter<Resource<Int>> ->
-                        if(volume in BroadLinkProfile.TvProfile.minVolume
-                                ..BroadLinkProfile.TvProfile.maxVolume)
-                            e.onNext(Resource.success(volume))
-                        else
-                            e.onNext(Resource.error("unknown value",null))
-                    }
+                }
+                .flatMap { volume ->
+                    Observable.just(Resource.success(volume))
                 }
                 .onErrorReturn { t:Throwable ->
                     Resource.error("${t.message}",null)
                 }
-    }
 }
