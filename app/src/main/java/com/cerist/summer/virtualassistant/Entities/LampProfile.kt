@@ -6,10 +6,9 @@ class LampProfile{
 
     companion object {
          const val DEVICE_MAC_ADDRESS:String = "E1:A8:5D:0E:86:10"
-         const val DEVICE_NAME = "name"
 
-        val DEVICE_SERVICE_UUID = UUID.fromString("")
-        val LUMINOSITY_CHARACTERISTIC_UUID =  UUID.fromString("")
+
+        const val LUMINOSITY_CHARACTERISTIC_UUID =  ""
         const val STATE_CHARACTERISTIC_UUID =  "000BEEF-1212-EFDE-1523-785FEABCD123"
     }
 

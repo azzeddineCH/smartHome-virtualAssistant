@@ -146,10 +146,12 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
         return mLampBleConnection
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
-                    it.writeCharacteristic(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID, byteArrayOf(i)).toObservable()
-                }.flatMap { bytes ->
+                    it.writeCharacteristic(UUID.fromString(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID), byteArrayOf(i)).toObservable()
+                }
+                .flatMap { bytes ->
                     Observable.create { e: ObservableEmitter<Int> -> e.onNext(bytes[0].toInt()) }
-                }.flatMap { value ->
+                }
+                .flatMap { value ->
                     Observable.create { e: ObservableEmitter<Resource<LampProfile.LAMP_LUMINOSITY>> ->
                         when (value) {
                             0 -> e.onNext(Resource.success(LampProfile.LAMP_LUMINOSITY.NON))

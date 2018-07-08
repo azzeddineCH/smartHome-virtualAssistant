@@ -89,7 +89,7 @@ class AirConditionarRepository(val broadLink: Observable<RxBleDevice>,
         mAirConditionerTemp = mBroadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
-                    it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.TEMPERATURE_CHARACTERISTIC_UUID))
+                    it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.TEMPERATURE_UP_CHARACTERISTIC_UUID))
                             .toObservable()}
                 .flatMap { bytes ->
                     Observable.just(bytes[0].toInt()) }
@@ -173,11 +173,17 @@ class AirConditionarRepository(val broadLink: Observable<RxBleDevice>,
                 else
                     e.onError(Throwable("inappropriate value",null))
             }}
+            .flatMap { mAirConditionerTemp }
             .flatMap {
-                it.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.TEMPERATURE_CHARACTERISTIC_UUID),
-                        byteArrayOf(temperature.toByte())).toObservable()
+                val currentTemperature = it.data
+                if(temperature > currentTemperature!!)
+                    mBroadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.TEMPERATURE_UP_CHARACTERISTIC_UUID),
+                            byteArrayOf(temperature.toByte())).toObservable()
+                else
+                    mBroadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.TEMPERATURE_DOWN_CHARACTERISTIC_UUID),
+                            byteArrayOf(temperature.toByte())).toObservable()
             }
-            .flatMap { bytes ->
+            .flatMap{ bytes ->
                 Observable.just(bytes[0].toInt())
             }
             .flatMap { value ->

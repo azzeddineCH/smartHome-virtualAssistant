@@ -4,7 +4,6 @@ import java.util.*
 
 class BroadLinkProfile{
     companion object {
-        val DEVICE_NAME= ""
         val DEVICE_MAC_ADDRESS ="B8:27:EB:AA:D6:51"
     }
 
@@ -12,10 +11,11 @@ class BroadLinkProfile{
 
         companion object {
 
-            const val DEVICE_SERVICE_UUID =  ""
-            const val STATE_CHARACTERISTIC_UUID = ""
-            const val MODE_CHARACTERISTIC_UUID = ""
-            const val TEMPERATURE_CHARACTERISTIC_UUID = ""
+            const val DEVICE_SERVICE_UUID =  "19fc95c0-c111-11e3-9904-0002a5d5c51b"
+            const val STATE_CHARACTERISTIC_UUID = "44fac9e0-c111-11e3-9246-0002a5d5c51b"
+            const val MODE_CHARACTERISTIC_UUID = "43fac9e0-c111-11e3-9246-0002a5d5c51b"
+            const val TEMPERATURE_UP_CHARACTERISTIC_UUID = "41fac9e0-c111-11e3-9246-0002a5d5c51b"
+            const val TEMPERATURE_DOWN_CHARACTERISTIC_UUID = "42fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val MAX_TEMP = 30
             const val MIN_TEMP = 17
         }
@@ -34,9 +34,10 @@ class BroadLinkProfile{
 
     class TvProfile{
         companion object {
-            const val DEVICE_SERVICE_UUID= ""
-            const val STATE_CHARACTERISTIC_UUID = ""
-            const val VOLUME_CHARACTERISTIC_UUID = ""
+            const val DEVICE_SERVICE_UUID= "18fc95c0-c111-11e3-9904-0002a5d5c51b"
+            const val STATE_CHARACTERISTIC_UUID = "53fac9e0-c111-11e3-9246-0002a5d5c51b"
+            const val VOLUME_UP_CHARACTERISTIC_UUID = "51fac9e0-c111-11e3-9246-0002a5d5c51b"
+            const val VOLUME_DOWN_CHARACTERISTIC_UUID = "52fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val MAX_VOLUME = 99
             const val MIN_VOLUME = 0
         }

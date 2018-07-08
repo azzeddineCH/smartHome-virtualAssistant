@@ -88,7 +88,7 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
 
     fun getTvConnectionState() = mBroadLinkConnectionState
     fun getTvPowerState() = mState
-    fun getTvVolumLevel() = mTvVolumeLevel
+    fun getTvVolumeLevel() = mTvVolumeLevel
 
     fun setTvPowerState(state: BroadLinkProfile.TvProfile.State)
             = mBroadLinkConnection
@@ -126,9 +126,16 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                     else
                         e.onError(Throwable("inappropriate value",null))
                 } }
+                .flatMap { mTvVolumeLevel }
                 .flatMap {
-                    it.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_CHARACTERISTIC_UUID),
+                    val currentVolume = it.data
+                    if(volume > currentVolume!!)
+                        mBroadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_UP_CHARACTERISTIC_UUID),
                             byteArrayOf(volume.toByte())).toObservable()
+                    else
+                        mBroadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_DOWN_CHARACTERISTIC_UUID),
+                                byteArrayOf(volume.toByte())).toObservable()
+
                 }
                 .flatMap { bytes ->
                     Observable.create { e: ObservableEmitter<Int> ->

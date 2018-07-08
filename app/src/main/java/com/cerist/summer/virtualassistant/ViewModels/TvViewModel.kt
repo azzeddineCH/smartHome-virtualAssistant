@@ -12,7 +12,7 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
     }
 
     fun getTvPowerState() = tvRepository.getTvPowerState().toLiveData()
-    fun getTvVolumLevel()= tvRepository.getTvVolumLevel().toLiveData()
+    fun getTvVolumLevel()= tvRepository.getTvVolumeLevel().toLiveData()
 
     fun setTvPowerState(state:BroadLinkProfile.TvProfile.State)
             = tvRepository.setTvPowerState(state).toLiveData()
