@@ -2,10 +2,12 @@ package com.cerist.summer.virtualassistant.Utils
 
 import android.support.v4.app.FragmentActivity
 import android.util.Log
+import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Entities.LampProfile
-import com.cerist.summer.virtualassistant.Repositories.BroadLinkRepository
+import com.cerist.summer.virtualassistant.Repositories.AirConditionarRepository
 import com.cerist.summer.virtualassistant.Repositories.IRepository
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
+import com.cerist.summer.virtualassistant.Repositories.TvRepository
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.scan.ScanFilter
@@ -30,7 +32,7 @@ class DefaultServiceLocator (val activity: FragmentActivity): ServiceLocator {
     private val BLUETOOTH_IO = Executors.newFixedThreadPool(2)
     private val NETWORK_IO = Executors.newFixedThreadPool(2)
     private var lampBleDevice: Observable<RxBleDevice>
-    private var broadLinkBleDevice: Observable<RxBleDevice>?= null
+    private var broadLinkBleDevice: Observable<RxBleDevice>
 
     init {
 
@@ -50,17 +52,37 @@ class DefaultServiceLocator (val activity: FragmentActivity): ServiceLocator {
                 .filter { it }
 
         lampBleDevice = permissionsCheck
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap {    blueToothClient.scanBleDevices(
+                .observeOn(Schedulers.from(getBlueToothExecutor()))
+                .flatMap {
+                    blueToothClient.scanBleDevices(
                         ScanSettings.Builder()
                                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                                 .build(),
                         ScanFilter.Builder()
                                 .setDeviceAddress(LampProfile.DEVICE_MAC_ADDRESS)
-                                .build())}
+                                .build())
+                }
                 .toFlowable(BackpressureStrategy.LATEST)
                 .toObservable()
+                .take(1)
+                .flatMap { result ->
+                    Log.d(TAG,"the device named ${result.bleDevice.name} is found")
+                    Observable.just(result.bleDevice)
+                }
+
+        broadLinkBleDevice  = permissionsCheck
                 .observeOn(Schedulers.from(getBlueToothExecutor()))
+                .flatMap {
+                    blueToothClient.scanBleDevices(
+                            ScanSettings.Builder()
+                                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                                    .build(),
+                            ScanFilter.Builder()
+                                    .setDeviceAddress(BroadLinkProfile.DEVICE_MAC_ADDRESS)
+                                    .build())
+                }
+                .toFlowable(BackpressureStrategy.LATEST)
+                .toObservable()
                 .take(1)
                 .flatMap { result ->
                     Log.d(TAG,"the device named ${result.bleDevice.name} is found")
@@ -90,7 +112,15 @@ class DefaultServiceLocator (val activity: FragmentActivity): ServiceLocator {
                     bluetoothExecutor = getBlueToothExecutor()
             )
 
-            Repositories.BROAD_LINK_REPOSITORY -> BroadLinkRepository()
+            Repositories.TV_REPOSITORY -> TvRepository(
+                    broadLink = broadLinkBleDevice,
+                    bluetoothExecutor = getBlueToothExecutor()
+
+            )
+            Repositories.AIR_CONDITIONER_REPOSITORY -> AirConditionarRepository(
+                    broadLink = broadLinkBleDevice,
+                    bluetoothExecutor = getBlueToothExecutor()
+            )
         }
     }
 }

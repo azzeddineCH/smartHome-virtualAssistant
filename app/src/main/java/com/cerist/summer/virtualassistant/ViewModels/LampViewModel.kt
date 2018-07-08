@@ -8,46 +8,25 @@ import com.cerist.summer.virtualassistant.Repositories.LampRepository
 import com.cerist.summer.virtualassistant.Utils.Status
 import io.reactivex.disposables.CompositeDisposable
 
-class LampViewModel(val lampRepository:LampRepository):ViewModel(){
+class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
 
     val lampBleConnectionState by lazy {
         lampRepository.getLampConnectionState().toLiveData()
     }
+    private val compositeDisposable:CompositeDisposable= CompositeDisposable()
 
-    val compositeDisposable:CompositeDisposable= CompositeDisposable()
     fun getLampLumonisitiyLevelLiveData() = lampRepository.getLampLuminosityLevel().toLiveData()
     fun getLampLightningStateLiveData() =lampRepository.getLampLightningState().toLiveData()
 
 
-    fun setLampLightningState(state:LampProfile.LAMP_STATE){
+    fun setLampLightningState(state:LampProfile.LAMP_STATE)
+            =  lampRepository.setLampLightningState(state).toLiveData()
 
-       val disposable =lampRepository.setLampLightningState(state)
-                .subscribe{
-                    if(it.status == Status.SUCCESS)
-                        Log.d("LampViewModel","state: ${it.data?.name}")
-                    else
-                        Log.d("LampViewModel","state: ${it.message}")
-                }
 
-        compositeDisposable.addAll(disposable)
-    }
-    fun setLampLumonisitiyLevel(level: LampProfile.LAMP_LUMINOSITY){
 
-        val disposable = lampRepository.getLampLuminosityLevel(level)
-                .subscribe{
-                    if(it.status == Status.SUCCESS)
-                        Log.d("LampViewModel","state: ${it.data?.name}")
-                    else
-                        Log.d("LampViewModel","state: ${it.message}")
-                }
-            compositeDisposable.addAll(disposable)
+    fun setLampLumonisitiyLevel(level: LampProfile.LAMP_LUMINOSITY)
+           = lampRepository.setLampLuminosityLevel(level).toLiveData()
 
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        compositeDisposable.clear()
-    }
 
 
 
