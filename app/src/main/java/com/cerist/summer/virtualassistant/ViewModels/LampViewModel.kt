@@ -13,10 +13,10 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
     val lampBleConnectionState by lazy {
         lampRepository.getLampConnectionState().toLiveData()
     }
-    private val compositeDisposable:CompositeDisposable= CompositeDisposable()
 
-    fun getLampLumonisitiyLevelLiveData() = lampRepository.getLampLuminosityLevel().toLiveData()
-    fun getLampLightningStateLiveData() =lampRepository.getLampLightningState().toLiveData()
+
+    fun getLampLumonisitiyLevel() = lampRepository.getLampLuminosityLevel().toLiveData()
+    fun getLampLightningState() =lampRepository.getLampLightningState().toLiveData()
 
 
     fun setLampLightningState(state:LampProfile.LAMP_STATE)

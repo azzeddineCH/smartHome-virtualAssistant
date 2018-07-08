@@ -101,7 +101,7 @@ class DefaultServiceLocator (val activity: FragmentActivity): ServiceLocator {
 
         return when (key) {
             BleDevices.LAMP -> lampBleDevice
-            BleDevices.BROAD_LINK -> lampBleDevice
+            BleDevices.BROAD_LINK -> broadLinkBleDevice
         }
     }
 
