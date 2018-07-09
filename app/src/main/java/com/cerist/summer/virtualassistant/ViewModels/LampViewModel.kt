@@ -11,21 +11,16 @@ import io.reactivex.disposables.CompositeDisposable
 class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
 
     val lampBleConnectionState by lazy {
-        lampRepository.getLampConnectionState().toLiveData()
+        lampRepository.lampConnectionState.toLiveData()
     }
 
 
-    fun getLampLumonisitiyLevel() = lampRepository.getLampLuminosityLevel().toLiveData()
-    fun getLampLightningState() =lampRepository.getLampLightningState().toLiveData()
+    fun getLampLuminosityLevel() = lampRepository.lampLuminosityLevel.toLiveData()
+    fun getLampLightningState() =lampRepository.lampLightningState.toLiveData()
 
 
-    fun setLampLightningState(state:LampProfile.LAMP_STATE)
-            =  lampRepository.setLampLightningState(state).toLiveData()
-
-
-
-    fun setLampLumonisitiyLevel(level: LampProfile.LAMP_LUMINOSITY)
-           = lampRepository.setLampLuminosityLevel(level).toLiveData()
+    fun setLampLightningState(state:LampProfile.LAMP_STATE) =  lampRepository.setLampLightningState(state).toLiveData()
+    fun setLampLuminosityLevel(level: LampProfile.LAMP_LUMINOSITY) = lampRepository.setLampLuminosityLevel(level).toLiveData()
 
 
 

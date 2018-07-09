@@ -9,7 +9,7 @@ class LampProfile{
 
 
         const val LUMINOSITY_CHARACTERISTIC_UUID =  ""
-        const val STATE_CHARACTERISTIC_UUID =  "000BEEF-1212-EFDE-1523-785FEABCD123"
+        const val STATE_CHARACTERISTIC_UUID =  "0000beef-1212-EFDE-1523-785FEABCD123"
     }
 
     enum class LAMP_STATE(s: String) {

@@ -43,7 +43,7 @@ dependencies {
     compile 'ai.api:libai:1.6.12'
     //Rx Java
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.7'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.16'
 
     // Rx Java for BLE
     compile "com.polidea.rxandroidble2:rxandroidble:1.6.0"

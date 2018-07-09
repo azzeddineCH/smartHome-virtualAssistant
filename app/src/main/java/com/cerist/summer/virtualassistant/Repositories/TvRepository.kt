@@ -20,20 +20,21 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
         val TAG = "TvRepository"
     }
 
-    private val  mBroadLinkConnection: ConnectableObservable<RxBleConnection>
+    private val  mBroadLinkConnection: Observable<RxBleConnection>
     private val  mBroadLinkConnectionState:Observable<RxBleConnection.RxBleConnectionState>
 
     private val  mState:Observable<Resource<BroadLinkProfile.TvProfile.State>>
     private val  mTvVolumeLevel:Observable<Resource<Int>>
 
     init {
+
         mBroadLinkConnection =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(LampRepository.TAG,"connecting to the GATT server named ${it.name}")
                     it.establishConnection(false)
                 }
-                .publish()
+                .share()
 
         mBroadLinkConnectionState =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
@@ -41,7 +42,6 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                     Log.d(LampRepository.TAG,"start to observe the connection state with ${it.name}: ${it.connectionState.name}")
                     it.observeConnectionStateChanges()
                 }
-
 
         mState =   mBroadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
@@ -63,7 +63,6 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                     Resource.error("${t.message}",null)
                 }
 
-
         mTvVolumeLevel =  mBroadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
@@ -83,6 +82,7 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                     }
                 .onErrorReturn { t:Throwable ->
                     Resource.error("${t.message}",null) }
+
 
     }
 

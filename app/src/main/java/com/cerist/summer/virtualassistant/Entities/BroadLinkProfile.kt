@@ -11,7 +11,6 @@ class BroadLinkProfile{
 
         companion object {
 
-            const val DEVICE_SERVICE_UUID =  "19fc95c0-c111-11e3-9904-0002a5d5c51b"
             const val STATE_CHARACTERISTIC_UUID = "44fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val MODE_CHARACTERISTIC_UUID = "43fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val TEMPERATURE_UP_CHARACTERISTIC_UUID = "41fac9e0-c111-11e3-9246-0002a5d5c51b"
@@ -34,7 +33,6 @@ class BroadLinkProfile{
 
     class TvProfile{
         companion object {
-            const val DEVICE_SERVICE_UUID= "18fc95c0-c111-11e3-9904-0002a5d5c51b"
             const val STATE_CHARACTERISTIC_UUID = "53fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val VOLUME_UP_CHARACTERISTIC_UUID = "51fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val VOLUME_DOWN_CHARACTERISTIC_UUID = "52fac9e0-c111-11e3-9246-0002a5d5c51b"
