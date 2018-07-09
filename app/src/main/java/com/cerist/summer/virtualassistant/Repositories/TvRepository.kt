@@ -8,7 +8,6 @@ import com.polidea.rxandroidble2.RxBleDevice
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.observables.ConnectableObservable
 import io.reactivex.schedulers.Schedulers
 import java.util.*
 import java.util.concurrent.Executor
@@ -20,30 +19,38 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
         val TAG = "TvRepository"
     }
 
-    private val  mBroadLinkConnection: Observable<RxBleConnection>
-    private val  mBroadLinkConnectionState:Observable<RxBleConnection.RxBleConnectionState>
+     val  broadLinkConnection: Observable<RxBleConnection>
+     val  broadLinkConnectionState:Observable<Resource<RxBleConnection.RxBleConnectionState>>
 
-    private val  mState:Observable<Resource<BroadLinkProfile.TvProfile.State>>
-    private val  mTvVolumeLevel:Observable<Resource<Int>>
+     val  tvPowerState:Observable<Resource<BroadLinkProfile.TvProfile.State>>
+     val  tvVolumeLevel:Observable<Resource<Int>>
 
     init {
 
-        mBroadLinkConnection =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
+        broadLinkConnection =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(LampRepository.TAG,"connecting to the GATT server named ${it.name}")
-                    it.establishConnection(false)
+                    it.establishConnection(true)
                 }
+                .retry()
                 .share()
 
-        mBroadLinkConnectionState =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
+        broadLinkConnectionState =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(LampRepository.TAG,"start to observe the connection state with ${it.name}: ${it.connectionState.name}")
                     it.observeConnectionStateChanges()
                 }
+                .flatMap {
+                    Observable.just(Resource.success(it))
+                }
+                .onErrorReturn { t:Throwable ->
+                    Resource.error("${t.message}",null)
+                }
+                .share()
 
-        mState =   mBroadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
+        tvPowerState =   broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(LampRepository.TAG,"reading from the Characteristic")
@@ -62,8 +69,9 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                 .onErrorReturn { t:Throwable ->
                     Resource.error("${t.message}",null)
                 }
+                .share()
 
-        mTvVolumeLevel =  mBroadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
+        tvVolumeLevel =  broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(LampRepository.TAG,"reading from the Characteristic")
@@ -82,16 +90,13 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                     }
                 .onErrorReturn { t:Throwable ->
                     Resource.error("${t.message}",null) }
+                .share()
 
 
     }
 
-    fun getTvConnectionState() = mBroadLinkConnectionState
-    fun getTvPowerState() = mState
-    fun getTvVolumeLevel() = mTvVolumeLevel
-
     fun setTvPowerState(state: BroadLinkProfile.TvProfile.State)
-            = mBroadLinkConnection
+            = broadLinkConnection
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
                     it.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID),
@@ -114,10 +119,11 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                 .onErrorReturn { t:Throwable ->
                     Resource.error("${t.message}",null)
                 }
+                .share()
 
 
     fun setTvVolumeLevel(volume:Int)
-          = mBroadLinkConnection
+          = broadLinkConnection
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap { Observable.create { e: ObservableEmitter<RxBleConnection> ->
                     if(volume in BroadLinkProfile.TvProfile.MIN_VOLUME
@@ -126,14 +132,14 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                     else
                         e.onError(Throwable("inappropriate value",null))
                 } }
-                .flatMap { mTvVolumeLevel }
+                .flatMap { tvVolumeLevel }
                 .flatMap {
                     val currentVolume = it.data
                     if(volume > currentVolume!!)
-                        mBroadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_UP_CHARACTERISTIC_UUID),
+                        broadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_UP_CHARACTERISTIC_UUID),
                             byteArrayOf(volume.toByte())).toObservable()
                     else
-                        mBroadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_DOWN_CHARACTERISTIC_UUID),
+                        broadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_DOWN_CHARACTERISTIC_UUID),
                                 byteArrayOf(volume.toByte())).toObservable()
 
                 }
@@ -148,4 +154,5 @@ class TvRepository(val broadLink: Observable<RxBleDevice>,
                 .onErrorReturn { t:Throwable ->
                     Resource.error("${t.message}",null)
                 }
+                .share()
 }

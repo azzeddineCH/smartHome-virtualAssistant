@@ -58,13 +58,28 @@ class HomeActivity:AppCompatActivity(){
         })
 
 
-        moreModel.getTvPowerState().observe(this, Observer<Resource<BroadLinkProfile.TvProfile.State>>{
+        moreModel.tvBleConnectionState.observe(this, Observer<Resource<RxBleConnection.RxBleConnectionState>>{
+            if (it?.status == Status.SUCCESS)
+                Log.d(TAG,"connection ${it.data}")
+            else
+                Log.d(TAG,"connection error ${it?.message}")
+        })
+/*
+       moreModel.tvPowerState.observe(this, Observer<Resource<BroadLinkProfile.TvProfile.State>>{
             if (it?.status == Status.SUCCESS)
                 Log.d(TAG,"connection ${it.data}")
             else
                 Log.d(TAG,"connection error ${it?.message}")
         })
 
+        moreModel.tvVolumeLevel.observe(this, Observer<Resource<Int>>{
+            if (it?.status == Status.SUCCESS)
+                Log.d(TAG,"connection ${it.data}")
+            else
+                Log.d(TAG,"connection error ${it?.message}")
+        })
+
+*/
 
     }
 }

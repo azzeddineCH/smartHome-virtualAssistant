@@ -14,6 +14,7 @@ import java.util.concurrent.Executor
 
 class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
                      val bluetoothExecutor: Executor) : IRepository {
+
     companion object {
         val TAG = "LampRepository"
     }
@@ -46,8 +47,7 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
                                                 Observable.just(Resource.success(it))
                                                   }
                                             .onErrorReturn { t:Throwable ->
-                                                                    Resource.error("${t.message}",null)
-                                                         }
+                                                                    Resource.error("${t.message}",null)}
                                             .share()
 
 
@@ -71,7 +71,8 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
                                                     }}
                                                 .onErrorReturn { t:Throwable ->
                                                             Resource.error("${t.message}",null)
-                                                }.share()
+                                                }
+                                                .share()
 
 
 
@@ -96,7 +97,8 @@ class LampRepository(val lampBleDevice: Observable<RxBleDevice>,
                     }}
                 .onErrorReturn { t:Throwable ->
                     Resource.error("${t.message}",null)
-                }.share()
+                }
+                .share()
 
 
 

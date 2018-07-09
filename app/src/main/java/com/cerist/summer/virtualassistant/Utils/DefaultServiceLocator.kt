@@ -58,20 +58,21 @@ class DefaultServiceLocator (val activity: FragmentActivity): ServiceLocator {
 
 
 
+        broadLinkBleDevice = bluetoothScan.filter { it.bleDevice.macAddress ==  BroadLinkProfile.DEVICE_MAC_ADDRESS}
+                                         .flatMap { result ->
+                                                           Log.d(TAG, "the device named ${result.bleDevice.name} is found")
+                                                  Observable.just(result.bleDevice) }
+                                         .retry()
+                                         .share()
+
 
         lampBleDevice =   bluetoothScan.filter { it.bleDevice.macAddress == LampProfile.DEVICE_MAC_ADDRESS }
-                                     .flatMap { result ->
+                                      .flatMap { result ->
                                                       Log.d(TAG, "the device named ${result.bleDevice.name} is found")
                                               Observable.just(result.bleDevice) }
                                       .retry()
                                       .share()
 
-
-        broadLinkBleDevice = bluetoothScan.filter { it.bleDevice.macAddress ==  BroadLinkProfile.DEVICE_MAC_ADDRESS}
-                                         .flatMap { result ->
-                                                           Log.d(TAG, "the device named ${result.bleDevice.name} is found")
-                                                  Observable.just(result.bleDevice) }
-                                         .share()
 
 
 
@@ -100,12 +101,12 @@ class DefaultServiceLocator (val activity: FragmentActivity): ServiceLocator {
             )
 
             Repositories.TV_REPOSITORY -> TvRepository(
-                    broadLink = broadLinkBleDevice,
+                    broadLink = getBleDevice(BleDevices.BROAD_LINK),
                     bluetoothExecutor = getBlueToothExecutor()
 
             )
             Repositories.AIR_CONDITIONER_REPOSITORY -> AirConditionarRepository(
-                    broadLink = broadLinkBleDevice,
+                    broadLink =  getBleDevice(BleDevices.BROAD_LINK),
                     bluetoothExecutor = getBlueToothExecutor()
             )
         }
