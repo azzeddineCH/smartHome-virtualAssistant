@@ -1,10 +1,14 @@
 package com.cerist.summer.virtualassistant.ViewModels
 
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Repositories.TvRepository
 import com.cerist.summer.virtualassistant.Utils.toLiveData
+import com.polidea.rxandroidble2.RxBleConnection
+import io.reactivex.disposables.CompositeDisposable
 
 class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
 
@@ -12,25 +16,55 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
         val TAG = "TvViewModel"
     }
 
-    val tvBleConnectionState by lazy {
-        tvRepository.broadLinkConnectionState.toLiveData()
+    private val mTvBleConnectionState :MutableLiveData<RxBleConnection.RxBleConnectionState> = MutableLiveData()
+    private val mTvPowerState: MutableLiveData<BroadLinkProfile.TvProfile.State> = MutableLiveData()
+    private val mTvVolumeLevel: MutableLiveData<Int> = MutableLiveData()
+    private val compositeDisposable = CompositeDisposable()
+
+
+   init {
+       compositeDisposable.add(tvRepository.broadLinkConnectionState.subscribe(
+               mTvBleConnectionState::postValue,{}
+       ))
+
+       compositeDisposable.add(tvRepository.tvPowerState.subscribe(
+               mTvPowerState::postValue,{}
+       ))
+
+       compositeDisposable.add(tvRepository.tvVolumeLevel.subscribe(
+               mTvVolumeLevel::postValue,{}
+       ))
+
+       compositeDisposable.add(tvRepository.broadLinkConnection.subscribe({},{
+        Log.d(TAG,"connection error")
+       }))
+   }
+
+
+    fun getTvConnectionState():LiveData<RxBleConnection.RxBleConnectionState> = mTvBleConnectionState
+    fun getTvPowerState():LiveData<BroadLinkProfile.TvProfile.State> = mTvPowerState
+    fun getTvVolumeLevel():LiveData<Int> = mTvVolumeLevel
+
+    fun setTvPowerState(state:BroadLinkProfile.TvProfile.State) {
+        compositeDisposable.add(tvRepository.setTvPowerState(state)
+                .subscribe({
+
+                },{
+
+                }))
     }
+    fun setTvVolumLevel(level:Int) {
+        compositeDisposable.add(tvRepository.setTvVolumeLevel(level)
+                .subscribe({
 
-    val dispsable = tvRepository.broadLinkConnection.subscribe {
-            Log.d(TAG,"Tv connection moves to ${it.readRssi()}")
+                },{
+
+                })
+        )
     }
-
-    val  tvPowerState = tvRepository.tvPowerState.toLiveData()
-    val  tvVolumeLevel  = tvRepository.tvVolumeLevel.toLiveData()
-
-    fun setTvPowerState(state:BroadLinkProfile.TvProfile.State)
-                     = tvRepository.setTvPowerState(state).toLiveData()
-
-    fun setTvVolumLevel(level:Int)
-                    = tvRepository.setTvVolumeLevel(level).toLiveData()
 
     override fun onCleared() {
         super.onCleared()
-        dispsable.dispose()
+        compositeDisposable.clear()
     }
 }

@@ -1,11 +1,11 @@
 package com.cerist.summer.virtualassistant.ViewModels
 
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
-import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.LampProfile
-import com.cerist.summer.virtualassistant.Utils.toLiveData
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
-import com.cerist.summer.virtualassistant.Utils.Status
+import com.polidea.rxandroidble2.RxBleConnection
 import io.reactivex.disposables.CompositeDisposable
 
 class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
@@ -13,25 +13,64 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
     companion object {
         val TAG = "LampViewModel"
     }
-    val lampBleConnectionState by lazy {
-        lampRepository.lampConnectionState.toLiveData()
+    private val  mLampPowerState:MutableLiveData<LampProfile.State> = MutableLiveData()
+    private val  mLampLuminosityLevel:MutableLiveData<LampProfile.Luminosity>  = MutableLiveData()
+    private val  mLampBleConnectionState:MutableLiveData<RxBleConnection.RxBleConnectionState>  = MutableLiveData()
+    private val  compositeDisposable = CompositeDisposable()
+
+    init {
+
+      compositeDisposable.add(lampRepository.lampConnectionState.subscribe(
+              mLampBleConnectionState::postValue,{
+
+      }))
+
+      compositeDisposable.add(lampRepository.lampLightningState.subscribe(
+              mLampPowerState::postValue,{
+
+              }))
+
+        compositeDisposable.add(lampRepository.lampLuminosityLevel.subscribe(
+                mLampLuminosityLevel::postValue,{
+
+                }))
+
+        compositeDisposable.add(lampRepository.lampBleConnection.subscribe({},{
+
+        }))
+
     }
 
-    val dispsable = lampRepository.lampBleConnection.subscribe {
-        Log.d(TAG,"Tv connection moves to ${it.readRssi()}")
+
+    fun getLampLuminosityLevel():LiveData<LampProfile.Luminosity> = mLampLuminosityLevel
+    fun getLampPowerState():LiveData<LampProfile.State> = mLampPowerState
+    fun getLampConnectionState():LiveData<RxBleConnection.RxBleConnectionState> = mLampBleConnectionState
+
+
+
+    fun setLampLightningState(state: LampProfile.State) {
+        compositeDisposable.add(lampRepository.setLampLightningState(state)
+            .subscribe({
+
+            },{
+
+            }))
+
     }
+    fun setLampLuminosityLevel(level: LampProfile.Luminosity) {
+        compositeDisposable.add(lampRepository.setLampLuminosityLevel(level)
+                .subscribe({
 
-    fun getLampLuminosityLevel() = lampRepository.lampLuminosityLevel.toLiveData()
-    fun getLampLightningState() =lampRepository.lampLightningState.toLiveData()
+                },{
 
+                }))
 
-    fun setLampLightningState(state:LampProfile.LAMP_STATE) =  lampRepository.setLampLightningState(state).toLiveData()
-    fun setLampLuminosityLevel(level: LampProfile.LAMP_LUMINOSITY) = lampRepository.setLampLuminosityLevel(level).toLiveData()
+    }
 
 
     override fun onCleared() {
         super.onCleared()
-        dispsable.dispose()
+       compositeDisposable.clear()
     }
 
 
