@@ -44,12 +44,6 @@ class HomeActivity:AppCompatActivity(){
           Log.d(TAG,"lamp connection ${it?.name}")
         })
 
-        tvViewModel.setTvPowerState(BroadLinkProfile.TvProfile.State.OFF)
-
-
-        lampViewModel.setLampPowerState(LampProfile.State.OFF)
-
-        airConditionerViewModel.setAirConditionerPowerState(BroadLinkProfile.AirConditionerProfile.State.OFF)
 
 
 

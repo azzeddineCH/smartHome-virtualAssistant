@@ -24,15 +24,21 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
 
    init {
        compositeDisposable.add(tvRepository.broadLinkConnectionState.subscribe(
-               mTvBleConnectionState::postValue,{}
+               mTvBleConnectionState::postValue,{
+           Log.d(TAG,"error is ${it.message}")
+       }
        ))
 
        compositeDisposable.add(tvRepository.tvPowerState.subscribe(
-               mTvPowerState::postValue,{}
+               mTvPowerState::postValue,{
+           Log.d(TAG,"error is ${it.message}")
+       }
        ))
 
        compositeDisposable.add(tvRepository.tvVolumeLevel.subscribe(
-               mTvVolumeLevel::postValue,{}
+               mTvVolumeLevel::postValue,{
+           Log.d(TAG,"error is ${it.message}")
+       }
        ))
 
        compositeDisposable.add(tvRepository.broadLinkConnection.subscribe({},{

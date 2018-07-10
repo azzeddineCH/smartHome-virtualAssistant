@@ -15,6 +15,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLocator {
 
@@ -43,10 +44,12 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
                                                .observeOn(Schedulers.from(getBlueToothExecutor()))
                                                .subscribeOn(AndroidSchedulers.mainThread())
                                                .startWith(Observable.just(blueToothClient.state))
+                                               .share()
 
 
          bluetoothScan =  bluetoothClientState.filter{it == RxBleClient.State.READY}
-                .flatMap {
+                 .delay(1000,TimeUnit.MILLISECONDS)
+                 .flatMap {
                     blueToothClient.scanBleDevices(
                             ScanSettings.Builder()
                                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
@@ -73,8 +76,7 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
                                        .share()
 
 
-
-           broadLinkRepository = BroadLinkRepository(broadLinkBleDevice,getBlueToothExecutor())
+        broadLinkRepository = BroadLinkRepository(broadLinkBleDevice,getBlueToothExecutor())
 
 
 

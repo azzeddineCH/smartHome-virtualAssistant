@@ -26,27 +26,28 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
 
         compositeDisposable.add(airConditionerRepository.broadLinkConnectionState.subscribe(
                 mAirConditionerConnectionState::postValue,{
+            Log.d(TAG,"error is ${it.message}")
 
         }))
 
         compositeDisposable.add(airConditionerRepository.airConditionerPowerState.subscribe(
                 mAirConditionerPowerState::postValue,{
-
+            Log.d(TAG,"error is ${it.message}")
         }))
 
         compositeDisposable.add(airConditionerRepository.airConditionerMode.subscribe(
                 mAirConditionerMode::postValue,{
-
+            Log.d(TAG,"error is ${it.message}")
         }))
 
         compositeDisposable.add(airConditionerRepository.airConditionerTemp.subscribe(
                 mAirConditionerTemp::postValue,{
-
+            Log.d(TAG,"error is ${it.message}")
         }))
 
         compositeDisposable.add(airConditionerRepository.broadLinkConnection.subscribe(
                 {},{
-
+            Log.d(TAG,"error is ${it.message}")
         }))
 
     }

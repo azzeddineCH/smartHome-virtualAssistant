@@ -23,7 +23,7 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
 
       compositeDisposable.add(lampRepository.lampConnectionState.subscribe(
               mLampBleConnectionState::postValue,{
-
+              Log.d(TAG,"error is ${it.message}")
       }))
 
       compositeDisposable.add(lampRepository.lampPowerState.subscribe(
@@ -33,8 +33,8 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
 
         compositeDisposable.add(lampRepository.lampLuminosityLevel.subscribe(
                 mLampLuminosityLevel::postValue,{
-
-                }))
+                 Log.d(TAG,"error is ${it.message}")
+                 }))
 
         compositeDisposable.add(lampRepository.lampBleConnection.subscribe({},{
 
