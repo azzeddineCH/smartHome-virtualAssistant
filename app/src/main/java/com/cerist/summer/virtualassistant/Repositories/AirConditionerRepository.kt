@@ -30,7 +30,7 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
         broadLinkConnection =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
-                    Log.d(TAG,"connecting to the GATT server named ${it.name}")
+                    Log.d(TAG,"connecting the broadLink GATT server")
                     it.establishConnection(true) }
                 .retry()
                 .share()
@@ -38,7 +38,7 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
         broadLinkConnectionState =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
-                    Log.d(TAG,"start to observe the connection state with ${it.name}: ${it.connectionState.name}")
+                    Log.d(TAG,"Observing the BroadLink GATT server connection state")
                     it.observeConnectionStateChanges()
                 }
                 .share()
@@ -47,7 +47,7 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
         airConditionerPowerState =   broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
-                    Log.d(TAG,"reading from the Characteristic")
+                             Log.d(TAG,"Reading the air conditioner power state characteristic")
                     it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.STATE_CHARACTERISTIC_UUID))
                             .toObservable()}
                 .flatMap {
@@ -63,6 +63,7 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
         airConditionerMode = broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
+                    Log.d(TAG,"Reading the air conditioner mode characteristic")
                     it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.MODE_CHARACTERISTIC_UUID))
                             .toObservable()}
                 .flatMap {
@@ -81,6 +82,7 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
         airConditionerTemp = broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
+                    Log.d(TAG,"Reading the air conditioner temperature characteristic")
                     it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.TEMPERATURE_UP_CHARACTERISTIC_UUID))
                             .toObservable()}
                 .flatMap {
@@ -102,6 +104,7 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
            =  broadLinkConnection
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
+                    Log.d(TAG,"Writing the air conditioner power state characteristic")
                     it.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.STATE_CHARACTERISTIC_UUID), byteArrayOf(state.value.toByte())).toObservable()
                 }
                 .flatMap {
@@ -123,6 +126,7 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
            =  broadLinkConnection
             .observeOn(Schedulers.from(bluetoothExecutor))
             .flatMap {
+                Log.d(TAG,"Writing the air conditioner mode characteristic")
                 it.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.MODE_CHARACTERISTIC_UUID), byteArrayOf(mode.value.toByte())).toObservable()
             }
             .flatMap {
@@ -150,6 +154,7 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
             }
             .flatMap { airConditionerTemp }
             .flatMap {
+                Log.d(TAG,"Writing  the air conditioner temperature characteristic")
                 if(temperature > it)
                     broadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.TEMPERATURE_UP_CHARACTERISTIC_UUID),
                             byteArrayOf(temperature.toByte())).toObservable()

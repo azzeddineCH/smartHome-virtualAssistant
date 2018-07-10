@@ -49,7 +49,7 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
 
 
     fun setLampLightningState(state: LampProfile.State) {
-        compositeDisposable.add(lampRepository.setLampLightningState(state)
+        compositeDisposable.add(lampRepository.setLampPowerState(state)
             .subscribe({
 
             },{

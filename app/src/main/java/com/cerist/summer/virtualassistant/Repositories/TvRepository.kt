@@ -29,7 +29,7 @@ class TvRepository(private val broadLink: Observable<RxBleDevice>,
         broadLinkConnection =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
-                    Log.d(TAG,"connecting to the GATT server named ${it.name}")
+                    Log.d(TAG,"connecting the broadLink GATT server")
                     it.establishConnection(true)
                 }
                 .retry()
@@ -38,7 +38,7 @@ class TvRepository(private val broadLink: Observable<RxBleDevice>,
         broadLinkConnectionState =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
-                    Log.d(TAG,"start to observe the connection state with ${it.name}: ${it.connectionState.name}")
+                    Log.d(TAG,"Observing the BroadLink GATT server connection state")
                     it.observeConnectionStateChanges()
                 }
                 .share()
@@ -46,7 +46,7 @@ class TvRepository(private val broadLink: Observable<RxBleDevice>,
         tvPowerState =   broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
-                    Log.d(TAG,"reading from the Characteristic")
+                    Log.d(TAG,"Reading the tv power state characteristic")
                     it.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID))
                             .toObservable()}
                 .flatMap {
@@ -63,7 +63,7 @@ class TvRepository(private val broadLink: Observable<RxBleDevice>,
         tvVolumeLevel =  broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
-                    Log.d(TAG,"reading from the Characteristic")
+                    Log.d(TAG,"Reading the tv volume level characteristic")
                     it.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID))
                             .toObservable()}
                 .flatMap { Observable.just(it[0].toInt()) }
@@ -83,6 +83,7 @@ class TvRepository(private val broadLink: Observable<RxBleDevice>,
             = broadLinkConnection
                     .observeOn(Schedulers.from(bluetoothExecutor))
                     .flatMap {
+                        Log.d(TAG,"Writing the tv power state characteristic")
                         it.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID),
                                 byteArrayOf(state.value.toByte())).toObservable()
                     }
@@ -111,6 +112,7 @@ class TvRepository(private val broadLink: Observable<RxBleDevice>,
                 .flatMap {
                     tvVolumeLevel }
                 .flatMap {
+                    Log.d(TAG,"Writing the tv volume level characteristic")
                     if(volume > it)
                         broadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_UP_CHARACTERISTIC_UUID),
                             byteArrayOf(volume.toByte())).toObservable()

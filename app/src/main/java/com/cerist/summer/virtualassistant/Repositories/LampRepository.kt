@@ -93,10 +93,11 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
 
 
-    fun setLampLightningState(state: LampProfile.State)
+    fun setLampPowerState(state: LampProfile.State)
             =lampBleConnection
                         .observeOn(Schedulers.from(bluetoothExecutor))
                         .flatMap {
+                            Log.d(TAG,"Writing the lamp power state characteristic")
                             it.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID), byteArrayOf(state.value.toByte())).toObservable()
                         }
                         .flatMap {
@@ -117,6 +118,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
           =lampBleConnection
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
+                    Log.d(TAG,"Writing the lamp luminosity characteristic")
                     it.writeCharacteristic(UUID.fromString(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID), byteArrayOf(level.value.toByte())).toObservable()
                 }
                 .flatMap {
