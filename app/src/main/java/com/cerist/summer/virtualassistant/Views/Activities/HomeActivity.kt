@@ -1,6 +1,8 @@
 package com.cerist.summer.virtualassistant.Views.Activities
 
 import android.arch.lifecycle.Observer
+import android.bluetooth.BluetoothManager
+import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -9,6 +11,7 @@ import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.cerist.summer.virtualassistant.Utils.getViewModel
 import com.cerist.summer.virtualassistant.R
 import com.cerist.summer.virtualassistant.Utils.Repositories
+import com.cerist.summer.virtualassistant.ViewModels.AirConditionerViewModel
 import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
 import com.cerist.summer.virtualassistant.ViewModels.TvViewModel
 import com.polidea.rxandroidble2.RxBleConnection
@@ -22,17 +25,28 @@ class HomeActivity:AppCompatActivity(){
         super.onCreate(savedInstanceState)
         setContentView(R.layout.home_activity)
 
+
+
+
         val lampViewModel  =  getViewModel(this,Repositories.LAMP_REPOSITORY) as LampViewModel
         val tvViewModel  =  getViewModel(this,Repositories.TV_REPOSITORY) as TvViewModel
+        val airConditionerViewModel  =  getViewModel(this,Repositories.AIR_CONDITIONER_REPOSITORY) as AirConditionerViewModel
 
 
-        lampViewModel.getLampPowerState().observe(this, Observer {
-            Log.d(TAG,"HERE WE ARE !! ${it?.name} ")
-        })
 
         tvViewModel.getTvConnectionState().observe(this, Observer {
-            Log.d(TAG,"HERE WE ARE  2!! ${it?.name} ")
+            Log.d(TAG,"tv connection ${it?.name} ")
         })
+
+        airConditionerViewModel.getAirConditionerConnectionState().observe(this, Observer {
+            Log.d(TAG,"air conditioner connection ${it?.name} ")
+        })
+
+        lampViewModel.getLampConnectionState().observe(this, Observer{
+          Log.d(TAG,"lamp connection ${it?.name}")
+        })
+
+
 
 
     }

@@ -3,6 +3,7 @@ package com.cerist.summer.virtualassistant.ViewModels
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
+import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
 import com.polidea.rxandroidble2.RxBleConnection
@@ -25,9 +26,9 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
 
       }))
 
-      compositeDisposable.add(lampRepository.lampLightningState.subscribe(
+      compositeDisposable.add(lampRepository.lampPowerState.subscribe(
               mLampPowerState::postValue,{
-
+                Log.d(TAG,"error is ${it.message}")
               }))
 
         compositeDisposable.add(lampRepository.lampLuminosityLevel.subscribe(

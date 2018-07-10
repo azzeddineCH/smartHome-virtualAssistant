@@ -5,7 +5,6 @@ import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
 import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.*
@@ -21,7 +20,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
      val  lampBleConnection: Observable<RxBleConnection>
      val  lampConnectionState:Observable<RxBleConnection.RxBleConnectionState>
 
-     val  lampLightningState:Observable<LampProfile.State>
+     val  lampPowerState:Observable<LampProfile.State>
      val  lampLuminosityLevel:Observable<LampProfile.Luminosity>
 
 
@@ -48,7 +47,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
 
 
-        lampLightningState =   lampBleConnection.observeOn(Schedulers.from(bluetoothExecutor))
+        lampPowerState =   lampBleConnection.observeOn(Schedulers.from(bluetoothExecutor))
                                                 .subscribeOn(AndroidSchedulers.mainThread())
                                                 .flatMap {
                                                         Log.d(TAG,"Reading the lamp power state characteristic")

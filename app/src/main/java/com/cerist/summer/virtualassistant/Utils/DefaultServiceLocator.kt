@@ -28,7 +28,7 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
     private var blueToothClient = RxBleClient.create(activity)
     private var rxPermissions = RxPermissions(activity)
 
-    private val BLUETOOTH_IO = Executors.newFixedThreadPool(3)
+    private val BLUETOOTH_IO = Executors.newFixedThreadPool(2)
     private val NETWORK_IO = Executors.newFixedThreadPool(2)
 
     private val bluetoothClientState:Observable<RxBleClient.State>

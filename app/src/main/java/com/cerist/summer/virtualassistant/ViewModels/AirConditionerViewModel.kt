@@ -1,5 +1,6 @@
 package com.cerist.summer.virtualassistant.ViewModels
 
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
@@ -45,6 +46,11 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
         }))
 
     }
+
+    fun getAirConditionerConnectionState():LiveData<RxBleConnection.RxBleConnectionState> = mAirConditionerConnectionState
+    fun getAirConditionerPowerState():LiveData<BroadLinkProfile.AirConditionerProfile.State> = mAirConditionerPowerState
+    fun getAirConditionerMode():LiveData<BroadLinkProfile.AirConditionerProfile.Mode> = mAirConditionerMode
+    fun getAirConditionerTemp():LiveData<Int>  = mAirConditionerTemp
 
     fun setAirConditionerPowerState(state:BroadLinkProfile.AirConditionerProfile.State) {
         compositeDisposable.add(airConditionerRepository.setAirConditionerPowerState(state)
