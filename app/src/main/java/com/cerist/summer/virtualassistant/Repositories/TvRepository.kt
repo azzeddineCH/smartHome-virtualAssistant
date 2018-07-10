@@ -11,7 +11,7 @@ import io.reactivex.schedulers.Schedulers
 import java.util.*
 import java.util.concurrent.Executor
 
-class TvRepository(private val broadLink: Observable<RxBleDevice>,
+class TvRepository(private val broadLinkRepository: BroadLinkRepository,
                    private val bluetoothExecutor: Executor) : IRepository {
 
     companion object {
@@ -26,22 +26,9 @@ class TvRepository(private val broadLink: Observable<RxBleDevice>,
 
     init {
 
-        broadLinkConnection =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap {
-                    Log.d(TAG,"connecting the broadLink GATT server")
-                    it.establishConnection(true)
-                }
-                .retry()
-                .share()
+        broadLinkConnection = broadLinkRepository.broadLinkConnection
 
-        broadLinkConnectionState =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap {
-                    Log.d(TAG,"Observing the BroadLink GATT server connection state")
-                    it.observeConnectionStateChanges()
-                }
-                .share()
+        broadLinkConnectionState =  broadLinkRepository.broadLinkConnectionState
 
         tvPowerState =   broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
                 .subscribeOn(AndroidSchedulers.mainThread())

@@ -12,7 +12,7 @@ import java.util.*
 import java.util.concurrent.Executor
 
 
-class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
+class AirConditionerRepository(private val broadLinkRepository: BroadLinkRepository,
                                private val bluetoothExecutor: Executor) : IRepository {
 
     companion object {
@@ -27,21 +27,9 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
      val airConditionerTemp:Observable<Int>
 
     init {
-        broadLinkConnection =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap {
-                    Log.d(TAG,"connecting the broadLink GATT server")
-                    it.establishConnection(true) }
-                .retry()
-                .share()
+        broadLinkConnection =  broadLinkRepository.broadLinkConnection
 
-        broadLinkConnectionState =  broadLink.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap {
-                    Log.d(TAG,"Observing the BroadLink GATT server connection state")
-                    it.observeConnectionStateChanges()
-                }
-                .share()
+        broadLinkConnectionState = broadLinkRepository.broadLinkConnectionState
 
 
         airConditionerPowerState =   broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
@@ -105,11 +93,11 @@ class AirConditionerRepository(private val broadLink: Observable<RxBleDevice>,
                 .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
                     Log.d(TAG,"Writing the air conditioner power state characteristic")
-                    it.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.STATE_CHARACTERISTIC_UUID), byteArrayOf(state.value.toByte())).toObservable()
+                    it.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.STATE_CHARACTERISTIC_UUID),
+                            byteArrayOf(state.value.toByte())).toObservable()
                 }
                 .flatMap {
                        Observable.just(it[0].toInt())
-
                 }
                 .flatMap {
                         when (it) {

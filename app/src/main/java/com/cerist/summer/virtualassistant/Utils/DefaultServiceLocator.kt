@@ -4,13 +4,11 @@ import android.support.v4.app.FragmentActivity
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Entities.LampProfile
-import com.cerist.summer.virtualassistant.Repositories.AirConditionerRepository
-import com.cerist.summer.virtualassistant.Repositories.IRepository
-import com.cerist.summer.virtualassistant.Repositories.LampRepository
-import com.cerist.summer.virtualassistant.Repositories.TvRepository
+import com.cerist.summer.virtualassistant.Repositories.*
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.scan.ScanFilter
+import com.polidea.rxandroidble2.scan.ScanResult
 import com.polidea.rxandroidble2.scan.ScanSettings
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.Observable
@@ -30,28 +28,32 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
 
     private val BLUETOOTH_IO = Executors.newFixedThreadPool(2)
     private val NETWORK_IO = Executors.newFixedThreadPool(2)
-
+    private val bluetoothScan:Observable<ScanResult>
     private val bluetoothClientState:Observable<RxBleClient.State>
-    private var lampBleDevice: Observable<RxBleDevice>
-    private var broadLinkBleDevice: Observable<RxBleDevice>
+    private val lampBleDevice: Observable<RxBleDevice>
+    private val broadLinkBleDevice: Observable<RxBleDevice>
+    private val broadLinkRepository:BroadLinkRepository
 
     init {
 
-    val bluetoothScan =   blueToothClient.scanBleDevices(
-            ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
-                    .build(),
-            ScanFilter.Builder().build())
-            .share()
+
 
 
         bluetoothClientState =  blueToothClient.observeStateChanges()
                                                .observeOn(Schedulers.from(getBlueToothExecutor()))
                                                .subscribeOn(AndroidSchedulers.mainThread())
                                                .startWith(Observable.just(blueToothClient.state))
-                                               .share()
 
+
+         bluetoothScan =  bluetoothClientState.filter{it == RxBleClient.State.READY}
+                .flatMap {
+                    blueToothClient.scanBleDevices(
+                            ScanSettings.Builder()
+                                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                                    .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
+                                    .build(),
+                            ScanFilter.Builder().build())}
+                .share()
 
 
 
@@ -71,6 +73,8 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
                                        .share()
 
 
+
+           broadLinkRepository = BroadLinkRepository(broadLinkBleDevice,getBlueToothExecutor())
 
 
 
@@ -98,12 +102,12 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
             )
 
             Repositories.TV_REPOSITORY -> TvRepository(
-                    broadLink = getBleDevice(BleDevices.BROAD_LINK),
+                    broadLinkRepository = broadLinkRepository,
                     bluetoothExecutor = getBlueToothExecutor()
 
             )
             Repositories.AIR_CONDITIONER_REPOSITORY -> AirConditionerRepository(
-                    broadLink =  getBleDevice(BleDevices.BROAD_LINK),
+                    broadLinkRepository = broadLinkRepository,
                     bluetoothExecutor = getBlueToothExecutor()
             )
         }

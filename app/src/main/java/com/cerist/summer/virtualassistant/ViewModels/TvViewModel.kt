@@ -48,9 +48,9 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
     fun setTvPowerState(state:BroadLinkProfile.TvProfile.State) {
         compositeDisposable.add(tvRepository.setTvPowerState(state)
                 .subscribe({
-
+                    Log.d(TAG,"writing with success $it")
                 },{
-
+                    Log.d(TAG,"writing error ${it.message}")
                 }))
     }
     fun setTvVolumLevel(level:Int) {

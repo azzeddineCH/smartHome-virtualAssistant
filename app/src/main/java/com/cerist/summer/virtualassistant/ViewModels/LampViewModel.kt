@@ -49,21 +49,20 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
 
 
 
-    fun setLampLightningState(state: LampProfile.State) {
-        compositeDisposable.add(lampRepository.setLampPowerState(state)
+    fun setLampPowerState(state: LampProfile.State) {
+      compositeDisposable.add(lampRepository.setLampPowerState(state)
             .subscribe({
-
+                Log.d(TAG,"writing with success $it")
             },{
-
+                Log.d(TvViewModel.TAG,"writing error")
             }))
-
     }
     fun setLampLuminosityLevel(level: LampProfile.Luminosity) {
         compositeDisposable.add(lampRepository.setLampLuminosityLevel(level)
                 .subscribe({
 
                 },{
-
+                    Log.d(TvViewModel.TAG,"writing error")
                 }))
 
     }

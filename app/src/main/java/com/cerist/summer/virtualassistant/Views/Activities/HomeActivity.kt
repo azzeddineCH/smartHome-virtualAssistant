@@ -1,8 +1,6 @@
 package com.cerist.summer.virtualassistant.Views.Activities
 
 import android.arch.lifecycle.Observer
-import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -14,7 +12,7 @@ import com.cerist.summer.virtualassistant.Utils.Repositories
 import com.cerist.summer.virtualassistant.ViewModels.AirConditionerViewModel
 import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
 import com.cerist.summer.virtualassistant.ViewModels.TvViewModel
-import com.polidea.rxandroidble2.RxBleConnection
+import kotlinx.android.synthetic.main.home_activity.*
 
 class HomeActivity:AppCompatActivity(){
     companion object {
@@ -46,6 +44,12 @@ class HomeActivity:AppCompatActivity(){
           Log.d(TAG,"lamp connection ${it?.name}")
         })
 
+        tvViewModel.setTvPowerState(BroadLinkProfile.TvProfile.State.OFF)
+
+
+        lampViewModel.setLampPowerState(LampProfile.State.OFF)
+
+        airConditionerViewModel.setAirConditionerPowerState(BroadLinkProfile.AirConditionerProfile.State.OFF)
 
 
 

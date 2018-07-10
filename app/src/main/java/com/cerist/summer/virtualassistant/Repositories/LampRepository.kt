@@ -101,7 +101,6 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                         }
                         .flatMap {
                                 Observable.just(it[0].toInt())
-
                         }
                         .flatMap {
                                 when (it) {
