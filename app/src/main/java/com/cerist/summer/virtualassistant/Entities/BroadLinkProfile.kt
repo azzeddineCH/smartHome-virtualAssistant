@@ -3,6 +3,7 @@ package com.cerist.summer.virtualassistant.Entities
 import java.util.*
 
 class BroadLinkProfile{
+
     companion object {
         val DEVICE_MAC_ADDRESS ="B8:27:EB:AA:D6:51"
     }

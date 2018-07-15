@@ -1,5 +1,8 @@
 package com.cerist.summer.virtualassistant.Utils
 
+
+import ai.api.android.AIConfiguration
+import ai.api.AIDataService
 import android.support.v4.app.FragmentActivity
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
@@ -28,12 +31,18 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
     private var rxPermissions = RxPermissions(activity)
 
     private val BLUETOOTH_IO = Executors.newFixedThreadPool(2)
-    private val NETWORK_IO = Executors.newFixedThreadPool(2)
+    private val NETWORK_IO = Executors.newFixedThreadPool(1)
     private val bluetoothScan:Observable<ScanResult>
     private val bluetoothClientState:Observable<RxBleClient.State>
     private val lampBleDevice: Observable<RxBleDevice>
     private val broadLinkBleDevice: Observable<RxBleDevice>
     private val broadLinkRepository:BroadLinkRepository
+    private val mConfig = AIConfiguration(
+            "e87e26ceb2ae4519ace2f3c71abd076e",
+                             ai.api.AIConfiguration.SupportedLanguages.English,
+                             AIConfiguration.RecognitionEngine.System
+    )
+    private val AIDataService = AIDataService(mConfig)
 
     init {
 
@@ -111,6 +120,11 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
             Repositories.AIR_CONDITIONER_REPOSITORY -> AirConditionerRepository(
                     broadLinkRepository = broadLinkRepository,
                     bluetoothExecutor = getBlueToothExecutor()
+            )
+            Repositories.DIALOG_REPOSITORY -> DialogRepository(
+                    AIService = AIDataService,
+                    networkExecutor = getNetworkExecutor()
+
             )
         }
     }

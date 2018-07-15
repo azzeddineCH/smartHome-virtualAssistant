@@ -5,9 +5,11 @@ import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentActivity
 import android.support.v7.app.AppCompatActivity
 import com.cerist.summer.virtualassistant.Repositories.AirConditionerRepository
+import com.cerist.summer.virtualassistant.Repositories.DialogRepository
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
 import com.cerist.summer.virtualassistant.Repositories.TvRepository
 import com.cerist.summer.virtualassistant.ViewModels.AirConditionerViewModel
+import com.cerist.summer.virtualassistant.ViewModels.DialogViewModel
 import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
 import com.cerist.summer.virtualassistant.ViewModels.TvViewModel
 import io.reactivex.BackpressureStrategy
@@ -30,12 +32,14 @@ fun Fragment.getViewModel(type:Repositories): ViewModel {
                 Repositories.LAMP_REPOSITORY -> LampViewModel(repo as LampRepository) as T
                 Repositories.TV_REPOSITORY -> TvViewModel(repo as TvRepository) as T
                 Repositories.AIR_CONDITIONER_REPOSITORY -> AirConditionerViewModel(repo as AirConditionerRepository) as T
+                Repositories.DIALOG_REPOSITORY -> DialogViewModel(repo as DialogRepository) as T
             }
         }
     })[when(type){
         Repositories.LAMP_REPOSITORY ->LampViewModel::class.java
         Repositories.TV_REPOSITORY -> TvViewModel::class.java
         Repositories.AIR_CONDITIONER_REPOSITORY -> AirConditionerViewModel::class.java
+        Repositories.DIALOG_REPOSITORY -> DialogViewModel::class.java
     }]
 
 }
@@ -51,12 +55,14 @@ fun AppCompatActivity.getViewModel(activity:FragmentActivity,type:Repositories):
                 Repositories.LAMP_REPOSITORY -> LampViewModel(repo as LampRepository) as T
                 Repositories.TV_REPOSITORY -> TvViewModel(repo as TvRepository) as T
                 Repositories.AIR_CONDITIONER_REPOSITORY -> AirConditionerViewModel(repo as AirConditionerRepository) as T
+                Repositories.DIALOG_REPOSITORY -> DialogViewModel(repo as DialogRepository) as T
             }
             }
     })[when(type){
         Repositories.LAMP_REPOSITORY ->LampViewModel::class.java
         Repositories.TV_REPOSITORY -> TvViewModel::class.java
         Repositories.AIR_CONDITIONER_REPOSITORY -> AirConditionerViewModel::class.java
+        Repositories.DIALOG_REPOSITORY -> DialogViewModel::class.java
     }]
 
 }

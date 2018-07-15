@@ -14,7 +14,8 @@ enum class BleDevices{
 enum class Repositories{
     LAMP_REPOSITORY,
     TV_REPOSITORY,
-    AIR_CONDITIONER_REPOSITORY
+    AIR_CONDITIONER_REPOSITORY,
+    DIALOG_REPOSITORY
 }
 
 interface ServiceLocator{
