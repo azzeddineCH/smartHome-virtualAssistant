@@ -7,6 +7,7 @@ import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
 import com.polidea.rxandroidble2.RxBleConnection
+import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 
 class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
@@ -14,63 +15,118 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
     companion object {
         val TAG = "LampViewModel"
     }
+
+
+    private val  mLampBleConnectionState:MutableLiveData<RxBleConnection.RxBleConnectionState> = MutableLiveData()
+    private val  mBluetoothErrorStatus:MutableLiveData<Int> = MutableLiveData()
+
     private val  mLampPowerState:MutableLiveData<LampProfile.State> = MutableLiveData()
-    private val  mLampLuminosityLevel:MutableLiveData<LampProfile.Luminosity>  = MutableLiveData()
-    private val  mLampBleConnectionState:MutableLiveData<RxBleConnection.RxBleConnectionState>  = MutableLiveData()
+    private val  mLampLuminosityLevel:MutableLiveData<LampProfile.Luminosity> = MutableLiveData()
+
+    private var  bleConnection:RxBleConnection ? = null
     private val  compositeDisposable = CompositeDisposable()
+
 
     init {
 
-      compositeDisposable.add(lampRepository.lampConnectionState.subscribe(
-              mLampBleConnectionState::postValue,{
-              Log.d(TAG,"error is ${it.message}")
-      }))
-
-      compositeDisposable.add(lampRepository.lampPowerState.subscribe(
-              mLampPowerState::postValue,{
-                Log.d(TAG,"error is ${it.message}")
-              }))
-
-        compositeDisposable.add(lampRepository.lampLuminosityLevel.subscribe(
-                mLampLuminosityLevel::postValue,{
-                 Log.d(TAG,"error is ${it.message}")
-                 }))
-
-        compositeDisposable.add(lampRepository.lampBleConnection.subscribe({},{
-
+        compositeDisposable.add(lampRepository.lampBleConnection.subscribe({
+            Log.d(TAG,"subscribing to the RxBleConnectionState")
+                    bleConnection = it
+        },{
+            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
         }))
 
+        compositeDisposable.add(lampRepository.lampConnectionState.subscribe(
+                mLampBleConnectionState::postValue,{
+            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
+        }))
+
+
     }
 
 
-    fun getLampLuminosityLevel():LiveData<LampProfile.Luminosity> = mLampLuminosityLevel
-    fun getLampPowerState():LiveData<LampProfile.State> = mLampPowerState
-    fun getLampConnectionState():LiveData<RxBleConnection.RxBleConnectionState> = mLampBleConnectionState
 
 
+    fun getLampLuminosityLevel(){
+        compositeDisposable.add(
+                Observable.just(Unit)
+                        .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable("device not connected"))
+                        }
+                        .flatMap {
+                                    lampRepository.getLampLuminosityLevel(bleConnection!!)}
+                        .subscribe(mLampLuminosityLevel::postValue,{
 
-    fun setLampPowerState(state: LampProfile.State) {
-      compositeDisposable.add(lampRepository.setLampPowerState(state)
-            .subscribe({
-                Log.d(TAG,"writing with success $it")
-            },{
-                Log.d(TvViewModel.TAG,"writing error")
-            }))
+                            }))
     }
-    fun setLampLuminosityLevel(level: LampProfile.Luminosity) {
-        compositeDisposable.add(lampRepository.setLampLuminosityLevel(level)
-                .subscribe({
+    fun getLampPowerState(){
+        compositeDisposable.add(
+                Observable.just(Unit)
+                        .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable("device not connected"))
+                        }
+                        .flatMap {
+                          lampRepository.getLampPowerState(bleConnection!!)}
+                .subscribe(mLampPowerState::postValue,{
 
-                },{
-                    Log.d(TvViewModel.TAG,"writing error")
                 }))
-
     }
+
+
+
+    fun setLampPowerState(state: LampProfile.State){
+        compositeDisposable.add(
+                Observable.just(state)
+                          .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable("device not connected"))
+                        }
+                          .flatMap {
+                              lampRepository.setLampPowerState(bleConnection!!,it) }
+                          .subscribe(mLampPowerState::postValue,{
+                          }))
+    }
+    fun setLampLuminosityLevel(level: LampProfile.Luminosity){
+        compositeDisposable.add(
+                Observable.just(level)
+                         .flatMap {
+                           if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                               Observable.error(Throwable("device not connected"))
+                        }
+                         .flatMap {
+                            lampRepository.setLampLuminosityLevel(bleConnection!!,it)
+                        }
+                         .subscribe(mLampLuminosityLevel::postValue,{
+
+                }))
+    }
+
+
+    fun getLampPowerStateLiveData(): LiveData<LampProfile.State> = mLampPowerState
+    fun getLampLuminosityLevelLiveData(): LiveData<LampProfile.Luminosity> = mLampLuminosityLevel
+    fun getLampConnectionStateLiveData():LiveData<RxBleConnection.RxBleConnectionState> = mLampBleConnectionState
+    fun getLampConnectionErrorLiveData():LiveData<Int> = mBluetoothErrorStatus
+
+
+
+
+    private fun isDeviceConnected() = mLampBleConnectionState.value == RxBleConnection.RxBleConnectionState.CONNECTED
+
 
 
     override fun onCleared() {
         super.onCleared()
-       compositeDisposable.clear()
+        compositeDisposable.clear()
     }
 
 

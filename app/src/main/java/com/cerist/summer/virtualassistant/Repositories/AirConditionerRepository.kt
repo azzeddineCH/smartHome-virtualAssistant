@@ -33,7 +33,6 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
 
 
         airConditionerPowerState =   broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                              Log.d(TAG,"Reading the air conditioner power state characteristic")
                     it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.STATE_CHARACTERISTIC_UUID))
@@ -49,7 +48,6 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                 .share()
 
         airConditionerMode = broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(TAG,"Reading the air conditioner mode characteristic")
                     it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.MODE_CHARACTERISTIC_UUID))
@@ -68,7 +66,6 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
 
 
         airConditionerTemp = broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(TAG,"Reading the air conditioner temperature characteristic")
                     it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.TEMPERATURE_UP_CHARACTERISTIC_UUID))
@@ -90,7 +87,6 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
 
     fun setAirConditionerPowerState(state: BroadLinkProfile.AirConditionerProfile.State)
            =  broadLinkConnection
-                .observeOn(Schedulers.from(bluetoothExecutor))
                 .flatMap {
                     Log.d(TAG,"Writing the air conditioner power state characteristic")
                     it.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.STATE_CHARACTERISTIC_UUID),
@@ -111,9 +107,8 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
 
 
     fun setAirConditionerMode(mode:BroadLinkProfile.AirConditionerProfile.Mode)
-           =  broadLinkConnection
-            .observeOn(Schedulers.from(bluetoothExecutor))
-            .flatMap {
+           =  broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
+             .flatMap {
                 Log.d(TAG,"Writing the air conditioner mode characteristic")
                 it.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.MODE_CHARACTERISTIC_UUID), byteArrayOf(mode.value.toByte())).toObservable()
             }
@@ -131,8 +126,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
             .share()!!
 
     fun setAirConditionerTemp(temperature:Int)
-            =  broadLinkConnection
-            .observeOn(Schedulers.from(bluetoothExecutor))
+            =  broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
             .flatMap {
                 if(temperature in BroadLinkProfile.AirConditionerProfile.MIN_TEMP
                         .. BroadLinkProfile.AirConditionerProfile.MAX_TEMP)
@@ -158,5 +152,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
             }
             .share()!!
 
+    override fun onCleared() {
 
+    }
 }

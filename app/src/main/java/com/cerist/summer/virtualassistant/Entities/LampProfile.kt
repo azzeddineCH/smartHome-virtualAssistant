@@ -8,7 +8,7 @@ class LampProfile{
          const val DEVICE_MAC_ADDRESS:String = "E1:A8:5D:0E:86:10"
 
 
-        const val LUMINOSITY_CHARACTERISTIC_UUID =  ""
+        const val LUMINOSITY_CHARACTERISTIC_UUID =  "0000beef-1212-EFDE-1523-785FEABCD123"
         const val STATE_CHARACTERISTIC_UUID =  "0000beef-1212-EFDE-1523-785FEABCD123"
     }
 

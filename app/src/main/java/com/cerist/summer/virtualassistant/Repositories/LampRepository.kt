@@ -2,11 +2,19 @@ package com.cerist.summer.virtualassistant.Repositories
 
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.LampProfile
+import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
+import com.jakewharton.rx.ReplayingShare
+import com.jakewharton.rx.replayingShare
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
+import com.polidea.rxandroidble2.utils.ConnectionSharingAdapter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import io.reactivex.subjects.BehaviorSubject
+import io.reactivex.subjects.PublishSubject
+import io.reactivex.subjects.ReplaySubject
 import java.util.*
 import java.util.concurrent.Executor
 
@@ -17,121 +25,95 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
        private val TAG = "LampRepository"
     }
 
-     val  lampBleConnection: Observable<RxBleConnection>
      val  lampConnectionState:Observable<RxBleConnection.RxBleConnectionState>
-
-     val  lampPowerState:Observable<LampProfile.State>
-     val  lampLuminosityLevel:Observable<LampProfile.Luminosity>
-
+     val  lampBleConnection: Observable<RxBleConnection>
 
     init {
 
-        lampBleConnection =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
-                                          .subscribeOn(AndroidSchedulers.mainThread())
+        lampBleConnection = lampBleDevice.subscribeOn(Schedulers.from(bluetoothExecutor))
+                                          .observeOn(AndroidSchedulers.mainThread())
                                           .flatMap {
-                                                  Log.d(TAG,"Connecting to the lamp GATT server")
-                                              it.establishConnection(true)
-                                          }
+                                              Log.d(TAG, "Connecting to the lamp GATT server")
+                                                      it.establishConnection(true)}
                                           .retry()
                                           .share()
 
 
 
-        lampConnectionState =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
-                                            .subscribeOn(AndroidSchedulers.mainThread())
+
+         lampConnectionState =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
+                                            .observeOn(AndroidSchedulers.mainThread())
                                             .flatMap {
                                                         Log.d(TAG,"Observing the Lamp GATT server connection state")
                                                         it.observeConnectionStateChanges()}
                                             .share()
 
-
-
-
-        lampPowerState =   lampBleConnection.observeOn(Schedulers.from(bluetoothExecutor))
-                                                .subscribeOn(AndroidSchedulers.mainThread())
-                                                .flatMap {
-                                                        Log.d(TAG,"Reading the lamp power state characteristic")
-                                                        it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
-                                                               .toObservable()}
-                                                .flatMap {
-                                                    Observable.just(it[0].toInt()) }
-                                                .flatMap {
-                                                        when (it) {
-                                                            0 -> Observable.just(LampProfile.State.OFF)
-                                                            1 ->  Observable.just(LampProfile.State.ON)
-                                                            else ->  Observable.error(Throwable("unknown value ${it}"))
-                                                        } }
-                                                .share()
-
-
-
-
-        lampLuminosityLevel = lampBleConnection.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap {
-                    Log.d(TAG,"Reading the lamp luminosity characteristic")
-                    it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
-                        .toObservable()}
-                .flatMap {
-                    Observable.just(it[0].toInt()) }
-                .flatMap {
-                        when (it) {
-                            0 -> Observable.just(LampProfile.Luminosity.NON)
-                            1 -> Observable.just(LampProfile.Luminosity.LOW)
-                            2 -> Observable.just(LampProfile.Luminosity.MEDIUM)
-                            3 -> Observable.just(LampProfile.Luminosity.HIGH)
-                            4 -> Observable.just(LampProfile.Luminosity.MAX)
-                            else -> Observable.error(Throwable("unknown value ${it}"))
-                        }}
-                .share()
-
-
-
     }
 
 
+    fun getLampLuminosityLevel(bleConnection: RxBleConnection)
+        =   bleConnection.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
+            .toObservable()
+            .flatMap {
+                Log.d(TAG,"reading $it")
+                Observable.just(it[0].toInt()) }
+            .flatMap {
+                when (it) {
+                    0 -> Observable.just(LampProfile.Luminosity.NON)
+                    1 -> Observable.just(LampProfile.Luminosity.LOW)
+                    2 -> Observable.just(LampProfile.Luminosity.MEDIUM)
+                    3 -> Observable.just(LampProfile.Luminosity.HIGH)
+                    4 -> Observable.just(LampProfile.Luminosity.MAX)
+                    else -> Observable.error(Throwable("unknown value ${it}"))
+                }}
+            .share()!!
 
 
-    fun setLampPowerState(state: LampProfile.State)
-            =lampBleConnection
-                        .observeOn(Schedulers.from(bluetoothExecutor))
+    fun getLampPowerState(bleConnection: RxBleConnection)
+        = bleConnection.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
+                        .toObservable()
                         .flatMap {
-                            Log.d(TAG,"Writing the lamp power state characteristic")
-                            it.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID), byteArrayOf(state.value.toByte())).toObservable()
-                        }
-                        .flatMap {
-                                Observable.just(it[0].toInt())
-                        }
+                                Observable.just(it[0].toInt()) }
                         .flatMap {
                                 when (it) {
                                     0 -> Observable.just(LampProfile.State.OFF)
                                     1 ->  Observable.just(LampProfile.State.ON)
-                                    else -> Observable.error(Throwable("unknown value"))
-                                }
-                        }
+                                    else ->  Observable.error(Throwable("unknown value ${it}"))
+                                }}
                         .share()!!
 
 
-    fun setLampLuminosityLevel(level: LampProfile.Luminosity)
-          =lampBleConnection
-                .observeOn(Schedulers.from(bluetoothExecutor))
-                .flatMap {
-                    Log.d(TAG,"Writing the lamp luminosity characteristic")
-                    it.writeCharacteristic(UUID.fromString(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID), byteArrayOf(level.value.toByte())).toObservable()
-                }
-                .flatMap {
-                    Observable.just(it[0].toInt())
-                }
-                .flatMap {
-                        when (it) {
-                            0 -> Observable.just(LampProfile.Luminosity.NON)
-                            1 -> Observable.just(LampProfile.Luminosity.LOW)
-                            2 -> Observable.just(LampProfile.Luminosity.MEDIUM)
-                            3 -> Observable.just(LampProfile.Luminosity.HIGH)
-                            4 -> Observable.just(LampProfile.Luminosity.MAX)
-                            else -> Observable.error(Throwable("unknown value"))
-                        }
-                }
-                .share()!!
+    fun setLampPowerState(bleConnection: RxBleConnection,state: LampProfile.State)
+            =bleConnection.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID), byteArrayOf(state.value.toByte()))
+                         .toObservable()
+                         .flatMap {
+                             Observable.just(it[0].toInt()) }
+                         .flatMap {
+                                when (it) {
+                                    0 -> Observable.just(LampProfile.State.OFF)
+                                    1 ->  Observable.just(LampProfile.State.ON)
+                                    else -> Observable.error(Throwable("unknown value")) }}
+                         .share()!!
+
+
+
+
+    fun setLampLuminosityLevel(bleConnection: RxBleConnection,level: LampProfile.Luminosity)
+             = bleConnection.writeCharacteristic(UUID.fromString(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID), byteArrayOf(level.value.toByte()))
+                        .toObservable()
+                        .flatMap {
+                                Observable.just(it[0].toInt())
+                            }
+                        .flatMap {
+                                when (it) {
+                                    0 -> Observable.just(LampProfile.Luminosity.NON)
+                                    1 -> Observable.just(LampProfile.Luminosity.LOW)
+                                    2 -> Observable.just(LampProfile.Luminosity.MEDIUM)
+                                    3 -> Observable.just(LampProfile.Luminosity.HIGH)
+                                    4 -> Observable.just(LampProfile.Luminosity.MAX)
+                                    else -> Observable.error(Throwable("unknown value"))
+                                }}
+                        .share()!!
+
 
     }

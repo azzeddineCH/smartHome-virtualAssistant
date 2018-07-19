@@ -14,6 +14,8 @@ import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
 import com.cerist.summer.virtualassistant.ViewModels.TvViewModel
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
+import io.reactivex.subjects.PublishSubject
+import org.reactivestreams.Publisher
 
 fun <T> Observable<T>.toLiveData(backPressureStrategy: BackpressureStrategy =
                                                     BackpressureStrategy.LATEST) :  LiveData<T> {
@@ -21,9 +23,22 @@ fun <T> Observable<T>.toLiveData(backPressureStrategy: BackpressureStrategy =
     return LiveDataReactiveStreams.fromPublisher(this.toFlowable(backPressureStrategy))
 }
 
+fun <T> LiveData<T>.take(count:Int): LiveData<T> {
+    val mutableLiveData: MediatorLiveData<T> = MediatorLiveData()
+    var takenCount = 0
+    mutableLiveData.addSource(this, {
+        if(takenCount<count) {
+            mutableLiveData.value = it
+            takenCount++
+        }
+    })
+    return mutableLiveData
+}
+
+
 fun Fragment.getViewModel(type:Repositories): ViewModel {
 
-    return ViewModelProviders.of(this, object : ViewModelProvider.Factory {
+    return ViewModelProviders.of(activity!!, object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             val repo = ServiceLocator.instance(activity!!)
                     .getRepository(type)
@@ -66,3 +81,5 @@ fun AppCompatActivity.getViewModel(activity:FragmentActivity,type:Repositories):
     }]
 
 }
+
+fun <A, B> LiveData<A>.switchMap(function: (A) -> LiveData<B>): LiveData<B> = Transformations.switchMap(this, function)

@@ -35,4 +35,5 @@ class BroadLinkRepository ( private val broadLink: Observable<RxBleDevice>,
                 }
                 .share()
     }
+
 }

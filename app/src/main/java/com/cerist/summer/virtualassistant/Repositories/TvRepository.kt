@@ -21,8 +21,6 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
      val broadLinkConnection: Observable<RxBleConnection>
      val broadLinkConnectionState:Observable<RxBleConnection.RxBleConnectionState>
 
-     val tvPowerState:Observable<BroadLinkProfile.TvProfile.State>
-     val tvVolumeLevel:Observable<Int>
 
     init {
 
@@ -30,50 +28,46 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
 
         broadLinkConnectionState =  broadLinkRepository.broadLinkConnectionState
 
-        tvPowerState =   broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap {
-                    Log.d(TAG,"Reading the tv power state characteristic")
-                    it.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID))
-                            .toObservable()}
-                .flatMap {
-                    Observable.just(it[0].toInt()) }
-                .flatMap { value ->
-                        when (value) {
-                            0 -> Observable.just(BroadLinkProfile.TvProfile.State.OFF)
-                            1 ->  Observable.just(BroadLinkProfile.TvProfile.State.ON)
-                            else -> Observable.error(Throwable("unknown value"))
-                        }
-                    }
-                .share()
-
-        tvVolumeLevel =  broadLinkConnection.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .flatMap {
-                    Log.d(TAG,"Reading the tv volume level characteristic")
-                    it.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID))
-                            .toObservable()}
-                .flatMap { Observable.just(it[0].toInt()) }
-                .flatMap {
-                      if(it in BroadLinkProfile.TvProfile.MIN_VOLUME
-                                           ..BroadLinkProfile.TvProfile.MAX_VOLUME)
-                          Observable.just(it)
-                            else
-                           Observable.error(Throwable("inappropriate value"))
-                    }
-                .share()
 
 
     }
 
-    fun setTvPowerState(state: BroadLinkProfile.TvProfile.State)
-            = broadLinkConnection
-                    .observeOn(Schedulers.from(bluetoothExecutor))
-                    .flatMap {
-                        Log.d(TAG,"Writing the tv power state characteristic")
-                        it.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID),
-                                byteArrayOf(state.value.toByte())).toObservable()
-                    }
+
+
+    fun getTvPowerState(bleConnection: RxBleConnection)
+       =  bleConnection.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID))
+            .toObservable()
+            .flatMap {
+                Observable.just(it[0].toInt()) }
+            .flatMap { value ->
+                when (value) {
+                    0 -> Observable.just(BroadLinkProfile.TvProfile.State.OFF)
+                    1 ->  Observable.just(BroadLinkProfile.TvProfile.State.ON)
+                    else -> Observable.error(Throwable("unknown value"))
+                }
+            }
+            .share()!!
+
+
+    fun getTvVolume(bleConnection: RxBleConnection)
+       = bleConnection.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID))
+            .toObservable()
+            .flatMap { Observable.just(it[0].toInt())}
+            .flatMap {
+                if(it in BroadLinkProfile.TvProfile.MIN_VOLUME
+                        ..BroadLinkProfile.TvProfile.MAX_VOLUME)
+                    Observable.just(it)
+                else
+                    Observable.error(Throwable("inappropriate value"))}
+            .share()!!
+
+
+
+fun setTvPowerState(bleConnection: RxBleConnection,state: BroadLinkProfile.TvProfile.State)
+            = bleConnection.writeCharacteristic(
+                                UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID),
+                                byteArrayOf(state.value.toByte()))
+                    .toObservable()
                     .flatMap {
                         Observable.just(it[0].toInt()) }
                     .flatMap {
@@ -86,9 +80,8 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
                     .share()!!
 
 
-    fun setTvVolumeLevel(volume:Int)
-          = broadLinkConnection
-                .observeOn(Schedulers.from(bluetoothExecutor))
+    fun setTvVolumeLevel(bleConnection: RxBleConnection,volume:Int)
+          = Observable.just(bleConnection)
                 .flatMap {
                     if(volume in BroadLinkProfile.TvProfile.MIN_VOLUME
                                         .. BroadLinkProfile.TvProfile.MAX_VOLUME)
@@ -97,7 +90,7 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
                          Observable.error(Throwable("inappropriate value"))
                  }
                 .flatMap {
-                    tvVolumeLevel }
+                    getTvVolume(it) }
                 .flatMap {
                     Log.d(TAG,"Writing the tv volume level characteristic")
                     if(volume > it)
@@ -111,4 +104,6 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
                 .flatMap {
                     Observable.just(it) }
                 .share()!!
+
+
 }

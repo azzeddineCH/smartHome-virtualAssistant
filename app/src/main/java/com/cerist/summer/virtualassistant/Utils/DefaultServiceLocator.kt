@@ -8,6 +8,7 @@ import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.cerist.summer.virtualassistant.Repositories.*
+import com.jakewharton.rx.replayingShare
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleDevice
 import com.polidea.rxandroidble2.scan.ScanFilter
@@ -65,7 +66,8 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
                                     .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
                                     .build(),
                             ScanFilter.Builder().build())}
-                .share()
+                 .share()
+
 
 
 
@@ -73,16 +75,21 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
                                           .flatMap { result ->
                                                            Log.d(TAG, "the device named ${result.bleDevice.name} is found")
                                                   Observable.just(result.bleDevice) }
-                                          .retry()
                                           .share()
+                                          .retry()
+
+
+
 
 
         lampBleDevice =   bluetoothScan.filter { it.bleDevice.macAddress == LampProfile.DEVICE_MAC_ADDRESS }
                                        .flatMap { result ->
                                                       Log.d(TAG, "the device named ${result.bleDevice.name} is found")
-                                              Observable.just(result.bleDevice) }
-                                       .retry()
+                                           Observable.just(result.bleDevice)}
                                        .share()
+                                       .retry()
+
+
 
 
         broadLinkRepository = BroadLinkRepository(broadLinkBleDevice,getBlueToothExecutor())

@@ -40,15 +40,15 @@ class ChatBotProfile{
     enum class Luminosity(val s:String){
         NON("Non"),
         LOW("Low"),
-        Medium("Medium"),
-        High("High"),
-        Max("Max")
+        MEDIUM("Medium"),
+        HIGH("High"),
+        MAX("Max")
     }
 
     enum class AirMode(val s:String){
         SLEEP("Sleep"),
         ENERGY_SAVER("Energy saver"),
-        Fun("Fun"),
-        Cool("Cool")
+        FUN("Fun"),
+        COOL("Cool")
     }
 }
