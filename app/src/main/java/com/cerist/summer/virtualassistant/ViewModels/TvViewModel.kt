@@ -17,7 +17,7 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
         val TAG = "TvViewModel"
     }
 
-    private val mTvBleConnectionState :MutableLiveData<RxBleConnection.RxBleConnectionState> = MutableLiveData()
+    private val  mTvBleConnectionState :MutableLiveData<RxBleConnection.RxBleConnectionState> = MutableLiveData()
     private val  mBluetoothErrorStatus:MutableLiveData<Int> = MutableLiveData()
 
     private val mTvPowerState: MutableLiveData<BroadLinkProfile.TvProfile.State> = MutableLiveData()
@@ -40,8 +40,7 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
        compositeDisposable.add(tvRepository.broadLinkConnectionState.subscribe(
                mTvBleConnectionState::postValue,{
            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
-       }
-       ))
+       }))
 
 
 
@@ -64,7 +63,6 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
 
                         }))
     }
-
     fun getTvVolumeLevel(){
         compositeDisposable.add(
                 Observable.just(Unit)
@@ -92,7 +90,7 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
                                 Observable.error(Throwable("device not connected"))
                         }
                         .flatMap {
-                            tvRepository.setTvPowerState(bleConnection!!,state)}
+                            tvRepository.setTvPowerState(bleConnection!!,it)}
                         .subscribe(mTvPowerState::postValue,{
                         }))
     }
@@ -105,7 +103,7 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
                             else
                                 Observable.error(Throwable("device not connected"))}
                         .flatMap {
-                            tvRepository.setTvVolumeLevel(bleConnection!!,level)
+                            tvRepository.setTvVolumeLevel(bleConnection!!,it)
                         }
                         .subscribe(mTvVolumeLevel::postValue,{
                         }))

@@ -30,8 +30,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
     init {
 
-        lampBleConnection = lampBleDevice.subscribeOn(Schedulers.from(bluetoothExecutor))
-                                          .observeOn(AndroidSchedulers.mainThread())
+        lampBleConnection = lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
                                           .flatMap {
                                               Log.d(TAG, "Connecting to the lamp GATT server")
                                                       it.establishConnection(true)}
@@ -42,7 +41,6 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
 
          lampConnectionState =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
-                                            .observeOn(AndroidSchedulers.mainThread())
                                             .flatMap {
                                                         Log.d(TAG,"Observing the Lamp GATT server connection state")
                                                         it.observeConnectionStateChanges()}
@@ -52,8 +50,11 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
 
     fun getLampLuminosityLevel(bleConnection: RxBleConnection)
-        =   bleConnection.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
-            .toObservable()
+        =   Observable.just(bleConnection)
+            .observeOn(Schedulers.from(bluetoothExecutor))
+            .flatMap {
+                it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
+                    .toObservable() }
             .flatMap {
                 Log.d(TAG,"reading $it")
                 Observable.just(it[0].toInt()) }
@@ -70,22 +71,29 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
 
     fun getLampPowerState(bleConnection: RxBleConnection)
-        = bleConnection.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
-                        .toObservable()
+        =   Observable.just(bleConnection)
+                        .observeOn(Schedulers.from(bluetoothExecutor))
+                        .flatMap {
+                it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
+                        .toObservable() }
                         .flatMap {
                                 Observable.just(it[0].toInt()) }
                         .flatMap {
-                                when (it) {
-                                    0 -> Observable.just(LampProfile.State.OFF)
-                                    1 ->  Observable.just(LampProfile.State.ON)
-                                    else ->  Observable.error(Throwable("unknown value ${it}"))
-                                }}
+                when (it) {
+                    0 -> Observable.just(LampProfile.State.OFF)
+                    1 ->  Observable.just(LampProfile.State.ON)
+                    else ->  Observable.error(Throwable("unknown value ${it}"))
+                }}
                         .share()!!
 
 
     fun setLampPowerState(bleConnection: RxBleConnection,state: LampProfile.State)
-            =bleConnection.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID), byteArrayOf(state.value.toByte()))
-                         .toObservable()
+            =  Observable.just(bleConnection)
+                         .observeOn(Schedulers.from(bluetoothExecutor))
+                         .flatMap {
+                it.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID),
+                                                                byteArrayOf(state.value.toByte()))
+                         .toObservable()}
                          .flatMap {
                              Observable.just(it[0].toInt()) }
                          .flatMap {
@@ -99,12 +107,15 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
 
     fun setLampLuminosityLevel(bleConnection: RxBleConnection,level: LampProfile.Luminosity)
-             = bleConnection.writeCharacteristic(UUID.fromString(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID), byteArrayOf(level.value.toByte()))
-                        .toObservable()
-                        .flatMap {
+             =  Observable.just(bleConnection)
+                          .observeOn(Schedulers.from(bluetoothExecutor))
+                          .flatMap {
+                                 it.writeCharacteristic(UUID.fromString(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID), byteArrayOf(level.value.toByte()))
+                                .toObservable() }
+                          .flatMap {
                                 Observable.just(it[0].toInt())
                             }
-                        .flatMap {
+                          .flatMap {
                                 when (it) {
                                     0 -> Observable.just(LampProfile.Luminosity.NON)
                                     1 -> Observable.just(LampProfile.Luminosity.LOW)
@@ -113,7 +124,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                                     4 -> Observable.just(LampProfile.Luminosity.MAX)
                                     else -> Observable.error(Throwable("unknown value"))
                                 }}
-                        .share()!!
+                           .share()!!
 
 
     }

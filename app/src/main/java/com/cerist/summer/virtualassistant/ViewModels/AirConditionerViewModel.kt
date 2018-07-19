@@ -8,6 +8,7 @@ import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Repositories.AirConditionerRepository
 import com.cerist.summer.virtualassistant.Utils.toLiveData
 import com.polidea.rxandroidble2.RxBleConnection
+import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 
 class AirConditionerViewModel(private val airConditionerRepository: AirConditionerRepository):ViewModel(){
@@ -16,72 +17,133 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
         val TAG = "AirConditionerViewModel"
     }
     private val mAirConditionerConnectionState:MutableLiveData<RxBleConnection.RxBleConnectionState> = MutableLiveData()
+    private val mBluetoothErrorStatus:MutableLiveData<Int> = MutableLiveData()
+
     private val mAirConditionerPowerState:MutableLiveData<BroadLinkProfile.AirConditionerProfile.State> = MutableLiveData()
     private val mAirConditionerMode:MutableLiveData<BroadLinkProfile.AirConditionerProfile.Mode> = MutableLiveData()
     private val mAirConditionerTemp:MutableLiveData<Int> = MutableLiveData()
+
+    private var bleConnection:RxBleConnection ? = null
     private val compositeDisposable = CompositeDisposable()
 
 
     init {
 
+        compositeDisposable.add(airConditionerRepository.broadLinkConnection.subscribe({
+            Log.d(TAG,"subscribing to the RxBleConnectionState")
+            bleConnection = it
+        },{
+            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
+        }))
+
+
         compositeDisposable.add(airConditionerRepository.broadLinkConnectionState.subscribe(
                 mAirConditionerConnectionState::postValue,{
-            Log.d(TAG,"error is ${it.message}")
-
-        }))
-
-        compositeDisposable.add(airConditionerRepository.airConditionerPowerState.subscribe(
-                mAirConditionerPowerState::postValue,{
-            Log.d(TAG,"error is ${it.message}")
-        }))
-
-        compositeDisposable.add(airConditionerRepository.airConditionerMode.subscribe(
-                mAirConditionerMode::postValue,{
-            Log.d(TAG,"error is ${it.message}")
-        }))
-
-        compositeDisposable.add(airConditionerRepository.airConditionerTemp.subscribe(
-                mAirConditionerTemp::postValue,{
-            Log.d(TAG,"error is ${it.message}")
-        }))
-
-        compositeDisposable.add(airConditionerRepository.broadLinkConnection.subscribe(
-                {},{
-            Log.d(TAG,"error is ${it.message}")
+            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
         }))
 
     }
 
-    fun getAirConditionerConnectionState():LiveData<RxBleConnection.RxBleConnectionState> = mAirConditionerConnectionState
-    fun getAirConditionerPowerState():LiveData<BroadLinkProfile.AirConditionerProfile.State> = mAirConditionerPowerState
-    fun getAirConditionerMode():LiveData<BroadLinkProfile.AirConditionerProfile.Mode> = mAirConditionerMode
-    fun getAirConditionerTemp():LiveData<Int>  = mAirConditionerTemp
+
+    fun getAirConditionerPowerState(){
+        compositeDisposable.add(
+                Observable.just(Unit)
+                        .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable("device not connected"))
+                        }
+                        .flatMap {
+                            airConditionerRepository.getAirConditionerPowerState(bleConnection!!)}
+                        .subscribe(mAirConditionerPowerState::postValue,{
+
+                        }))
+    }
+    fun getAirConditionerMode(){
+        compositeDisposable.add(
+                Observable.just(Unit)
+                        .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable("device not connected"))
+                        }
+                        .flatMap {
+                            airConditionerRepository.getAirConditionerMode(bleConnection!!)}
+                        .subscribe(mAirConditionerMode::postValue,{
+
+                        }))
+    }
+    fun getAirConditionerTemp(){
+        compositeDisposable.add(
+                Observable.just(Unit)
+                        .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable("device not connected"))
+                        }
+                        .flatMap {
+                            airConditionerRepository.getAirConditionerTemp(bleConnection!!)}
+                        .subscribe(mAirConditionerTemp::postValue,{
+
+                        }))
+    }
 
     fun setAirConditionerPowerState(state:BroadLinkProfile.AirConditionerProfile.State) {
-        compositeDisposable.add(airConditionerRepository.setAirConditionerPowerState(state)
-                .subscribe({
-                    Log.d(TAG,"writing with success $it")
-                },{
-                    Log.d(TAG,"writing error ${it.message}")
-                }))
+        compositeDisposable.add(
+                Observable.just(state)
+                        .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable("device not connected"))
+                        }
+                        .flatMap {
+                            airConditionerRepository.setAirConditionerPowerState(bleConnection!!,state)}
+                        .subscribe(mAirConditionerPowerState::postValue,{
+                        }))
     }
 
     fun setAirConditionerMode(mode: BroadLinkProfile.AirConditionerProfile.Mode){
-        compositeDisposable.add(airConditionerRepository.setAirConditionerMode(mode)
-                .subscribe({
-                    Log.d(TAG,"writing with success $it")
-                },{
-                    Log.d(TAG,"writing error ${it.message}")
-                }))
+        compositeDisposable.add(
+                Observable.just(mode)
+                        .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable("device not connected"))
+                        }
+                        .flatMap {
+                            airConditionerRepository.setAirConditionerMode(bleConnection!!,it)}
+                        .subscribe(mAirConditionerMode::postValue,{
+                        }))
     }
 
-    fun setAirConditionerTemp(temperature:Int){
-        compositeDisposable.add(airConditionerRepository.setAirConditionerTemp(temperature)
-                .subscribe({
-                    Log.d(TAG,"writing with success $it")
-                },{
-                    Log.d(TAG,"writing error ${it.message}")
-                }))}
+    fun setAirConditionerTemp(temperature:Int) {
+        compositeDisposable.add(
+                Observable.just(temperature)
+                        .flatMap {
+                            if (isDeviceConnected())
+                            Observable.just(it)
+                            else
+                            Observable.error(Throwable("device not connected"))
+                        }
+                        .flatMap {
+                            airConditionerRepository.setAirConditionerTemp(bleConnection!!, it)
+                        }
+                        .subscribe(mAirConditionerTemp::postValue, {
+                        }))
+    }
+
+
+    fun getAirConditionerConnectionStateLiveData():LiveData<RxBleConnection.RxBleConnectionState> = mAirConditionerConnectionState
+    fun getAirConditionerPowerStateLiveData():LiveData<BroadLinkProfile.AirConditionerProfile.State> = mAirConditionerPowerState
+    fun getAirConditionerModeLiveData():LiveData<BroadLinkProfile.AirConditionerProfile.Mode> = mAirConditionerMode
+    fun getAirConditionerTempLiveData():LiveData<Int> = mAirConditionerTemp
+
+    private fun isDeviceConnected() = mAirConditionerConnectionState.value == RxBleConnection.RxBleConnectionState.CONNECTED
 
     override fun onCleared() {
         super.onCleared()

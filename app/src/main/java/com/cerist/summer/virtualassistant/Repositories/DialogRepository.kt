@@ -138,7 +138,4 @@ class DialogRepository( private val AIService:AIDataService,
             }
             .share()
 
-    override fun onCleared() {
-
-    }
 }
