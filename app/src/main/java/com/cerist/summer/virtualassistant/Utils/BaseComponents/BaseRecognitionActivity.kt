@@ -1,14 +1,10 @@
-package com.cerist.summer.virtualassistant.Utils
+package com.cerist.summer.virtualassistant.Utils.BaseComponents
 
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.SpeechRecognizer
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import com.cerist.summer.virtualassistant.ViewModels.AirConditionerViewModel
-import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
-import com.cerist.summer.virtualassistant.ViewModels.TvViewModel
-import com.cerist.summer.virtualassistant.Views.Fragments.DialogFragment
 
 open class BaseRecognitionActivity:AppCompatActivity(), RecognitionListener {
     companion object {

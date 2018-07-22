@@ -1,5 +1,6 @@
-package com.cerist.summer.virtualassistant.Utils
+package com.cerist.summer.virtualassistant.Utils.Data
 
+import ai.api.model.AIOutputContext
 import com.cerist.summer.virtualassistant.Entities.ChatBotProfile
 import com.google.gson.JsonElement
 import java.util.HashMap
@@ -15,5 +16,6 @@ data class ResponseParametersListing(
 
 data class ResponseIntentListing(
         val action : String,
-        val parameters: HashMap<String, JsonElement>
+        val parameters: HashMap<String, JsonElement>,
+        val outputContexts: Map<String,AIOutputContext>
 )

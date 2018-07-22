@@ -6,7 +6,6 @@ import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Repositories.TvRepository
-import com.cerist.summer.virtualassistant.Utils.toLiveData
 import com.polidea.rxandroidble2.RxBleConnection
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable

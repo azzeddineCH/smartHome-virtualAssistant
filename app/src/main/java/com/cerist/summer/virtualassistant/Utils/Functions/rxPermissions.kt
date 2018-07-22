@@ -1,7 +1,6 @@
-package com.cerist.summer.virtualassistant.Utils
+package com.cerist.summer.virtualassistant.Utils.Functions
 
 import android.Manifest
-import android.app.Activity
 import android.support.v4.app.FragmentActivity
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.Observable

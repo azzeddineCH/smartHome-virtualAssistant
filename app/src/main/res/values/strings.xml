@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">VirtualAssistant</string>
+    
+    <!-- BOT responses -->
+    <!-- BOT lamp responses -->
+    <string name="lamp_power_state_indicator">The lights are</string>
+    <string name="lamp_mode_indicator">the brightness is set to</string>
+    
+    <!-- BOT error responses -->
+    
+    <string name="_100">Sorry! Bluetooth not available</string>
+    <string name="_101">Sorry! Device not connected</string>
+    <string name="_102">Sorry! something went wrong, retry please</string>
+
+
+
 </resources>

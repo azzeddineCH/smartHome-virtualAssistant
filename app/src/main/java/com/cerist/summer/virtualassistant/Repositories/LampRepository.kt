@@ -40,6 +40,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
 
 
+
          lampConnectionState =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
                                             .flatMap {
                                                         Log.d(TAG,"Observing the Lamp GATT server connection state")
@@ -56,7 +57,6 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                 it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
                     .toObservable() }
             .flatMap {
-                Log.d(TAG,"reading $it")
                 Observable.just(it[0].toInt()) }
             .flatMap {
                 when (it) {
@@ -65,7 +65,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                     2 -> Observable.just(LampProfile.Luminosity.MEDIUM)
                     3 -> Observable.just(LampProfile.Luminosity.HIGH)
                     4 -> Observable.just(LampProfile.Luminosity.MAX)
-                    else -> Observable.error(Throwable("unknown value ${it}"))
+                    else -> Observable.error(Throwable("102"))
                 }}
             .share()!!
 
@@ -82,7 +82,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                 when (it) {
                     0 -> Observable.just(LampProfile.State.OFF)
                     1 ->  Observable.just(LampProfile.State.ON)
-                    else ->  Observable.error(Throwable("unknown value ${it}"))
+                    else -> Observable.error(Throwable("102"))
                 }}
                         .share()!!
 
@@ -100,7 +100,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                                 when (it) {
                                     0 -> Observable.just(LampProfile.State.OFF)
                                     1 ->  Observable.just(LampProfile.State.ON)
-                                    else -> Observable.error(Throwable("unknown value")) }}
+                                    else -> Observable.error(Throwable("102")) }}
                          .share()!!
 
 

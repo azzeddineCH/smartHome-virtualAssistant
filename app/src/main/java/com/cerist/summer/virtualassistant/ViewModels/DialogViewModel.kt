@@ -7,7 +7,7 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.cerist.summer.virtualassistant.Repositories.DialogRepository
-import com.cerist.summer.virtualassistant.Utils.ResponseParametersListing
+import com.cerist.summer.virtualassistant.Utils.Data.ResponseParametersListing
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 

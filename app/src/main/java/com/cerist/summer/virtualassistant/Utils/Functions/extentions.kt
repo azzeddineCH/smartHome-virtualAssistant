@@ -1,4 +1,4 @@
-package com.cerist.summer.virtualassistant.Utils
+package com.cerist.summer.virtualassistant.Utils.Functions
 
 import android.arch.lifecycle.*
 import android.support.v4.app.Fragment
@@ -8,14 +8,14 @@ import com.cerist.summer.virtualassistant.Repositories.AirConditionerRepository
 import com.cerist.summer.virtualassistant.Repositories.DialogRepository
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
 import com.cerist.summer.virtualassistant.Repositories.TvRepository
+import com.cerist.summer.virtualassistant.Utils.Repositories
+import com.cerist.summer.virtualassistant.Utils.ServiceLocator
 import com.cerist.summer.virtualassistant.ViewModels.AirConditionerViewModel
 import com.cerist.summer.virtualassistant.ViewModels.DialogViewModel
 import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
 import com.cerist.summer.virtualassistant.ViewModels.TvViewModel
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
-import io.reactivex.subjects.PublishSubject
-import org.reactivestreams.Publisher
 
 fun <T> Observable<T>.toLiveData(backPressureStrategy: BackpressureStrategy =
                                                     BackpressureStrategy.LATEST) :  LiveData<T> {
@@ -36,7 +36,7 @@ fun <T> LiveData<T>.take(count:Int): LiveData<T> {
 }
 
 
-fun Fragment.getViewModel(type:Repositories): ViewModel {
+fun Fragment.getViewModel(type: Repositories): ViewModel {
 
     return ViewModelProviders.of(activity!!, object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -59,7 +59,7 @@ fun Fragment.getViewModel(type:Repositories): ViewModel {
 
 }
 
-fun AppCompatActivity.getViewModel(activity:FragmentActivity,type:Repositories): ViewModel {
+fun AppCompatActivity.getViewModel(activity:FragmentActivity,type: Repositories): ViewModel {
 
     return ViewModelProviders.of(this, object : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
