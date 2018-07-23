@@ -24,8 +24,7 @@ class DialogRepository( private val AIService:AIDataService,
      var dialogTextRequest: PublishSubject<String> = PublishSubject.create()
 
 
-     private var dialogResponse:Observable<AIResponse>  = dialogTextRequest
-              .observeOn(Schedulers.from(networkExecutor))
+     private var dialogResponse:Observable<AIResponse>  = dialogTextRequest.observeOn(Schedulers.from(networkExecutor))
               .flatMap {
                 val aiRequest = AIRequest(it)
                 Observable.create<AIResponse> {

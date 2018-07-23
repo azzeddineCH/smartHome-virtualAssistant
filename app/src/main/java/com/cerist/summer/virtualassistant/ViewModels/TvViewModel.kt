@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Repositories.TvRepository
+import com.cerist.summer.virtualassistant.Utils.Data.Status
 import com.polidea.rxandroidble2.RxBleConnection
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
@@ -17,7 +18,7 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
     }
 
     private val  mTvBleConnectionState :MutableLiveData<RxBleConnection.RxBleConnectionState> = MutableLiveData()
-    private val  mBluetoothErrorStatus:MutableLiveData<Int> = MutableLiveData()
+    private val  mBluetoothErrorStatus:MutableLiveData<String> = MutableLiveData()
 
     private val mTvPowerState: MutableLiveData<BroadLinkProfile.TvProfile.State> = MutableLiveData()
     private val mTvVolumeLevel: MutableLiveData<Int> = MutableLiveData()
@@ -33,13 +34,15 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
            bleConnection = it
        },{
            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
+           mBluetoothErrorStatus.postValue(Status.BLUETOOTH_CONNECTION_LOST)
        }))
 
 
        compositeDisposable.add(tvRepository.broadLinkConnectionState.subscribe(
-               mTvBleConnectionState::postValue,{
+               mTvBleConnectionState::postValue) {
            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
-       }))
+           mBluetoothErrorStatus.postValue(Status.BLUETOOTH_CONNECTION_LOST)
+       })
 
 
 
@@ -54,13 +57,12 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
                             if(isDeviceConnected())
                                 Observable.just(it)
                             else
-                                Observable.error(Throwable("device not connected"))
-                        }
+                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST)) }
                         .flatMap {
                             tvRepository.getTvPowerState(bleConnection!!)}
-                        .subscribe(mTvPowerState::postValue,{
-
-                        }))
+                        .subscribe(mTvPowerState::postValue) {
+                            mBluetoothErrorStatus.postValue(Status.OPERATION_ERROR)
+                        })
     }
     fun getTvVolumeLevel(){
         compositeDisposable.add(
@@ -69,12 +71,12 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
                             if(isDeviceConnected())
                                 Observable.just(it)
                             else
-                                Observable.error(Throwable("device not connected"))
-                        }
+                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST)) }
                         .flatMap {
                             tvRepository.getTvVolume(bleConnection!!)}
-                        .subscribe(mTvVolumeLevel::postValue,{
-                        })
+                        .subscribe(mTvVolumeLevel::postValue) {
+                            mBluetoothErrorStatus.postValue(Status.OPERATION_ERROR)
+                        }
 
         )
     }
@@ -86,13 +88,15 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
                             if(isDeviceConnected())
                                 Observable.just(it)
                             else
-                                Observable.error(Throwable("device not connected"))
-                        }
+                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST)) }
                         .flatMap {
                             tvRepository.setTvPowerState(bleConnection!!,it)}
-                        .subscribe(mTvPowerState::postValue,{
-                        }))
+                        .subscribe(mTvPowerState::postValue) {
+                            mBluetoothErrorStatus.postValue(Status.OPERATION_ERROR)
+                        })
     }
+
+
     fun setTvVolumLevel(level:Int) {
         compositeDisposable.add(
                 Observable.just(level)
@@ -100,18 +104,19 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
                             if(isDeviceConnected())
                                 Observable.just(it)
                             else
-                                Observable.error(Throwable("device not connected"))}
+                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST))}
                         .flatMap {
                             tvRepository.setTvVolumeLevel(bleConnection!!,it)
                         }
-                        .subscribe(mTvVolumeLevel::postValue,{
-                        }))
+                        .subscribe(mTvVolumeLevel::postValue) {
+                            mBluetoothErrorStatus.postValue(Status.OPERATION_ERROR)
+                        })
     }
 
     fun getTvConnectionStateLiveData():LiveData<RxBleConnection.RxBleConnectionState> = mTvBleConnectionState
     fun getTvPowerStateLiveDate():LiveData<BroadLinkProfile.TvProfile.State> = mTvPowerState
     fun getTvVolumeLevelLiveData():LiveData<Int> = mTvVolumeLevel
-    fun getTvConnectionErrorLiveData():LiveData<Int> = mBluetoothErrorStatus
+    fun getTvConnectionErrorLiveData():LiveData<String> = mBluetoothErrorStatus
 
     private fun isDeviceConnected() = mTvBleConnectionState.value == RxBleConnection.RxBleConnectionState.CONNECTED
 

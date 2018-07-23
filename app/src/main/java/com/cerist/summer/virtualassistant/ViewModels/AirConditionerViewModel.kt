@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Repositories.AirConditionerRepository
+import com.cerist.summer.virtualassistant.Utils.Data.Status
 import com.polidea.rxandroidble2.RxBleConnection
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
@@ -33,13 +34,15 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
             bleConnection = it
         },{
             Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
+            mBluetoothErrorStatus.postValue(Status.BLUETOOTH_CONNECTION_LOST)
         }))
 
 
         compositeDisposable.add(airConditionerRepository.broadLinkConnectionState.subscribe(
-                mAirConditionerConnectionState::postValue,{
-            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
-        }))
+                mAirConditionerConnectionState::postValue) {
+                    Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
+                    mBluetoothErrorStatus.postValue(Status.BLUETOOTH_CONNECTION_LOST)
+                })
 
     }
 
@@ -55,9 +58,9 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
                         }
                         .flatMap {
                             airConditionerRepository.getAirConditionerPowerState(bleConnection!!)}
-                        .subscribe(mAirConditionerPowerState::postValue,{
+                        .subscribe(mAirConditionerPowerState::postValue) {
 
-                        }))
+                        })
     }
     fun getAirConditionerMode(){
         compositeDisposable.add(
@@ -70,9 +73,9 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
                         }
                         .flatMap {
                             airConditionerRepository.getAirConditionerMode(bleConnection!!)}
-                        .subscribe(mAirConditionerMode::postValue,{
+                        .subscribe(mAirConditionerMode::postValue) {
 
-                        }))
+                        })
     }
     fun getAirConditionerTemp(){
         compositeDisposable.add(
@@ -85,9 +88,9 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
                         }
                         .flatMap {
                             airConditionerRepository.getAirConditionerTemp(bleConnection!!)}
-                        .subscribe(mAirConditionerTemp::postValue,{
-
-                        }))
+                        .subscribe(mAirConditionerTemp::postValue) {
+                            mBluetoothErrorStatus.postValue(Status.BLUETOOTH_CONNECTION_LOST)
+                        })
     }
 
     fun setAirConditionerPowerState(state:BroadLinkProfile.AirConditionerProfile.State) {
@@ -101,8 +104,8 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
                         }
                         .flatMap {
                             airConditionerRepository.setAirConditionerPowerState(bleConnection!!,state)}
-                        .subscribe(mAirConditionerPowerState::postValue,{
-                        }))
+                        .subscribe(mAirConditionerPowerState::postValue) {
+                        })
     }
 
     fun setAirConditionerMode(mode: BroadLinkProfile.AirConditionerProfile.Mode){
@@ -116,8 +119,8 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
                         }
                         .flatMap {
                             airConditionerRepository.setAirConditionerMode(bleConnection!!,it)}
-                        .subscribe(mAirConditionerMode::postValue,{
-                        }))
+                        .subscribe(mAirConditionerMode::postValue) {
+                        })
     }
 
     fun setAirConditionerTemp(temperature:Int) {
@@ -132,8 +135,8 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
                         .flatMap {
                             airConditionerRepository.setAirConditionerTemp(bleConnection!!, it)
                         }
-                        .subscribe(mAirConditionerTemp::postValue, {
-                        }))
+                        .subscribe(mAirConditionerTemp::postValue) {
+                        })
     }
 
 

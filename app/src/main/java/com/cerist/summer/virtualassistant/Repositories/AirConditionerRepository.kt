@@ -2,6 +2,7 @@ package com.cerist.summer.virtualassistant.Repositories
 
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
+import com.cerist.summer.virtualassistant.Utils.Data.Status
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
 import io.reactivex.Observable
@@ -35,7 +36,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
     fun getAirConditionerPowerState(bleConnection: RxBleConnection)
            =   Observable.just(bleConnection)
                          .observeOn(Schedulers.from(bluetoothExecutor))
-                        .flatMap {
+                         .flatMap {
                             Log.d(TAG,"Reading the air conditioner power state characteristic")
                             it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.STATE_CHARACTERISTIC_UUID))
                                     .toObservable()}
@@ -45,7 +46,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                             when (it) {
                                 0 -> Observable.just(BroadLinkProfile.AirConditionerProfile.State.OFF)
                                 1 ->  Observable.just(BroadLinkProfile.AirConditionerProfile.State.ON)
-                                else -> Observable.error(Throwable("unknown value"))
+                                else -> Observable.error(Throwable(Status.OPERATION_ERROR))
                             }}
                         .share()!!
 
@@ -64,7 +65,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                     1 -> Observable.just(BroadLinkProfile.AirConditionerProfile.Mode.ENERGY_SAVER)
                     2 -> Observable.just(BroadLinkProfile.AirConditionerProfile.Mode.FUN)
                     3 -> Observable.just(BroadLinkProfile.AirConditionerProfile.Mode.COOL)
-                    else -> Observable.error(Throwable("unknown value"))
+                    else -> Observable.error(Throwable(Status.OPERATION_ERROR))
                 }}
             .share()!!
 
@@ -82,7 +83,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                         .. BroadLinkProfile.AirConditionerProfile.MAX_TEMP)
                     Observable.just(it)
                 else
-                    Observable.error(Throwable("inappropriate value"))
+                    Observable.error(Throwable(Status.OPERATION_ERROR))
             }
             .share()!!
 
@@ -101,7 +102,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                                 when (it) {
                                     0 -> Observable.just(BroadLinkProfile.AirConditionerProfile.State.OFF)
                                     1 ->  Observable.just(BroadLinkProfile.AirConditionerProfile.State.ON)
-                                    else -> Observable.error(Throwable("unknown value"))
+                                    else -> Observable.error(Throwable(Status.OPERATION_ERROR))
                                 }
                         }
                         .share()!!
@@ -124,7 +125,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                                     1 ->  Observable.just(BroadLinkProfile.AirConditionerProfile.Mode.ENERGY_SAVER)
                                     2 ->  Observable.just(BroadLinkProfile.AirConditionerProfile.Mode.FUN)
                                     3 ->  Observable.just(BroadLinkProfile.AirConditionerProfile.Mode.COOL)
-                                    else -> Observable.error(Throwable("unknown value"))
+                                    else -> Observable.error(Throwable(Status.OPERATION_ERROR))
                                 }}
                         .share()!!
 
@@ -136,7 +137,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                                     .. BroadLinkProfile.AirConditionerProfile.MAX_TEMP)
                                 Observable.just(it)
                             else
-                                Observable.error(Throwable("inappropriate value"))
+                                Observable.error(Throwable(Status.OPERATION_ERROR))
                         }
                         .flatMap { getAirConditionerTemp(it) }
                         .flatMap {

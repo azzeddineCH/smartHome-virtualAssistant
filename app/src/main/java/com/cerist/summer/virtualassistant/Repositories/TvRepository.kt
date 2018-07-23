@@ -2,6 +2,7 @@ package com.cerist.summer.virtualassistant.Repositories
 
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
+import com.cerist.summer.virtualassistant.Utils.Data.Status
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
 import io.reactivex.Observable
@@ -43,7 +44,7 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
                 when (value) {
                     0 -> Observable.just(BroadLinkProfile.TvProfile.State.OFF)
                     1 ->  Observable.just(BroadLinkProfile.TvProfile.State.ON)
-                    else -> Observable.error(Throwable("unknown value"))
+                    else -> Observable.error(Throwable(Status.OPERATION_ERROR))
                 }
             }
             .share()!!
@@ -58,7 +59,7 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
                         ..BroadLinkProfile.TvProfile.MAX_VOLUME)
                     Observable.just(it)
                 else
-                    Observable.error(Throwable("inappropriate value"))}
+                    Observable.error(Throwable(Status.OPERATION_ERROR))}
             .share()!!
 
 
@@ -74,7 +75,7 @@ fun setTvPowerState(bleConnection: RxBleConnection,state: BroadLinkProfile.TvPro
                             when (it) {
                                 0 -> Observable.just(BroadLinkProfile.TvProfile.State.OFF)
                                 1 ->  Observable.just(BroadLinkProfile.TvProfile.State.ON)
-                                else -> Observable.error(Throwable("unknown value"))
+                                else -> Observable.error(Throwable(Status.OPERATION_ERROR))
                             }
                         }
                     .share()!!
@@ -87,7 +88,7 @@ fun setTvPowerState(bleConnection: RxBleConnection,state: BroadLinkProfile.TvPro
                                         .. BroadLinkProfile.TvProfile.MAX_VOLUME)
                         Observable.just(it)
                     else
-                         Observable.error(Throwable("inappropriate value"))
+                        Observable.error(Throwable(Status.OPERATION_ERROR))
                  }
                 .flatMap {
                     getTvVolume(it) }

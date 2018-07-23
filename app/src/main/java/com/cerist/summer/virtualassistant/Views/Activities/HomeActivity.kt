@@ -72,7 +72,10 @@ class HomeActivity: BaseRecognitionActivity(),
         mTextToSpeech =  TextToSpeech(this,this)
         with(mSpeechRecognizerIntent){
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,"en")
+            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,1)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS,500)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS,500)
         }
         mSpeechRecognizer.setRecognitionListener(this)
 
@@ -151,7 +154,7 @@ class HomeActivity: BaseRecognitionActivity(),
 
         mDialogViewModel.getDialogErrorStatus().observe(this, Observer {
             Log.d(TAG,"subscribing to the text response changes")
-            mTextToSpeech.speak(it,TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
+            mTextToSpeech.speak(getStringResourceByName(it!!),TextToSpeech.QUEUE_ADD,null,it.hashCode().toString())
         })
 
 
@@ -162,11 +165,11 @@ class HomeActivity: BaseRecognitionActivity(),
             Log.d(TAG,"subscribing to the lamp power dialog")
 
                      val device = it?.device
-                     val state  = it?.powerState
+                     val state  = it?.powerState !!
                      when(device){
-                         ChatBotProfile.Device.TV -> mTvViewModel.setTvPowerState(BroadLinkProfile.TvProfile.State.valueOf(state!!.name))
-                         ChatBotProfile.Device.AIR_CONDITIONER -> mAirConditionerViewModel.setAirConditionerPowerState(BroadLinkProfile.AirConditionerProfile.State.valueOf(state!!.name))
-                         ChatBotProfile.Device.LAMP -> mLampViewModel.setLampPowerState(LampProfile.State.valueOf(state!!.name))
+                         ChatBotProfile.Device.TV -> mTvViewModel.setTvPowerState(BroadLinkProfile.TvProfile.State.valueOf(state.name))
+                         ChatBotProfile.Device.AIR_CONDITIONER -> mAirConditionerViewModel.setAirConditionerPowerState(BroadLinkProfile.AirConditionerProfile.State.valueOf(state.name))
+                         ChatBotProfile.Device.LAMP -> mLampViewModel.setLampPowerState(LampProfile.State.valueOf(state.name))
                     }
                 })
 
@@ -189,9 +192,9 @@ class HomeActivity: BaseRecognitionActivity(),
                 })
 
         mDialogViewModel.getDeviceBrightnessSetAction().observe(this, Observer {
-                    val level = it?.luminosity
+                    val level = it?.luminosity !!
                     Log.d(TAG,"subscribing to the lamp luminosity set action: $level")
-                    mLampViewModel.setLampLuminosityLevel(LampProfile.Luminosity.valueOf(level!!.name))
+                    mLampViewModel.setLampLuminosityLevel(LampProfile.Luminosity.valueOf(level.name))
                 })
 
 
@@ -209,8 +212,8 @@ class HomeActivity: BaseRecognitionActivity(),
 
     override fun onResults(results: Bundle?) {
         Log.d(TAG,"onAudioRecordingButtonTouch:")
-        val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.get(0)
-        mDialogViewModel.setDialogTextRequest(text!!)
+        val text = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.get(0) !!
+        mDialogViewModel.setDialogTextRequest(text)
 
     }
 

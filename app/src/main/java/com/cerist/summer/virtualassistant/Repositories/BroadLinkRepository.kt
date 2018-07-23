@@ -19,7 +19,6 @@ class BroadLinkRepository ( private val broadLink: Observable<RxBleDevice>,
 
     init {
         broadLinkConnection = broadLink.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(TAG, "connecting the broadLink GATT server")
                     it.establishConnection(true)
@@ -28,7 +27,6 @@ class BroadLinkRepository ( private val broadLink: Observable<RxBleDevice>,
                 .share()
 
         broadLinkConnectionState = broadLink.observeOn(Schedulers.from(bluetoothExecutor))
-                .subscribeOn(AndroidSchedulers.mainThread())
                 .flatMap {
                     Log.d(TAG, "Observing the BroadLink GATT server connection state")
                     it.observeConnectionStateChanges()

@@ -1,5 +1,6 @@
 package com.cerist.summer.virtualassistant.Utils.Functions
 
+import android.arch.core.R
 import android.arch.lifecycle.*
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentActivity
@@ -68,8 +69,8 @@ fun AppCompatActivity.getViewModel(activity:FragmentActivity,type: Repositories)
 }
 
 fun  AppCompatActivity.getStringResourceByName(s: String):String{
-        val packageName = this.packageManager.getPackageInfo(this.packageName,0).applicationInfo.dataDir
-        val resId = resources.getIdentifier("_$s", "string", packageName)
+        val name = s.prependIndent("_")
+        val resId = resources.getIdentifier(name, "string", this.packageName)
         return this.getString(resId)
 
 }

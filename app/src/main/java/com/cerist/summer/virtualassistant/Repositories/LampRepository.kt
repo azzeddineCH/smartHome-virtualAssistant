@@ -45,8 +45,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
             .observeOn(Schedulers.from(bluetoothExecutor))
             .flatMap {
                 it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
-                        .toObservable()
-                        .doOnError { throw Throwable(Status.OPERATION_ERROR) }}
+                        .toObservable()}
             .flatMap {
                 Observable.just(it[0].toInt()) }
             .flatMap {
@@ -66,7 +65,6 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                         .flatMap {
                                   it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
                                           .toObservable()
-                                          .doOnError { throw Throwable(Status.OPERATION_ERROR) }
                         }
                         .flatMap {
                                 Observable.just(it[0].toInt()) }
@@ -84,8 +82,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                          .flatMap {
                                  it.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID),
                                                                 byteArrayOf(state.value.toByte()))
-                                                .toObservable()
-                                                .doOnError { throw Throwable(Status.OPERATION_ERROR) }}
+                                                .toObservable() }
                          .flatMap {
                              Observable.just(it[0].toInt()) }
                          .flatMap {
@@ -103,8 +100,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                           .observeOn(Schedulers.from(bluetoothExecutor))
                           .flatMap {
                                  it.writeCharacteristic(UUID.fromString(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID), byteArrayOf(level.value.toByte()))
-                                         .toObservable()
-                                         .doOnError { throw Throwable(Status.OPERATION_ERROR) }}
+                                         .toObservable() }
                           .flatMap {
                                 Observable.just(it[0].toInt())
                             }
