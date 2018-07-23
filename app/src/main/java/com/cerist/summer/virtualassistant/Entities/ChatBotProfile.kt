@@ -21,6 +21,8 @@ class ChatBotProfile{
         const val DEVICE_VOLUME_CHECK_ACTION_KEY = "device.volume.check"
 
 
+        const val DEVICE_SWITCH_CONTEXT ="device-switch"
+
         fun parameterValueMapper(value:String)
                 = value.toUpperCase().replace(" ","_")
     }

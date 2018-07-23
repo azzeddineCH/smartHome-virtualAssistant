@@ -2,19 +2,11 @@ package com.cerist.summer.virtualassistant.Repositories
 
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.LampProfile
-import com.cerist.summer.virtualassistant.ViewModels.LampViewModel
-import com.jakewharton.rx.ReplayingShare
-import com.jakewharton.rx.replayingShare
+import com.cerist.summer.virtualassistant.Utils.Data.Status
 import com.polidea.rxandroidble2.RxBleConnection
 import com.polidea.rxandroidble2.RxBleDevice
-import com.polidea.rxandroidble2.utils.ConnectionSharingAdapter
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import io.reactivex.subjects.BehaviorSubject
-import io.reactivex.subjects.PublishSubject
-import io.reactivex.subjects.ReplaySubject
 import java.util.*
 import java.util.concurrent.Executor
 
@@ -39,8 +31,6 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
 
 
 
-
-
          lampConnectionState =  lampBleDevice.observeOn(Schedulers.from(bluetoothExecutor))
                                             .flatMap {
                                                         Log.d(TAG,"Observing the Lamp GATT server connection state")
@@ -55,7 +45,8 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
             .observeOn(Schedulers.from(bluetoothExecutor))
             .flatMap {
                 it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
-                    .toObservable() }
+                        .toObservable()
+                        .doOnError { throw Throwable(Status.OPERATION_ERROR) }}
             .flatMap {
                 Observable.just(it[0].toInt()) }
             .flatMap {
@@ -65,8 +56,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                     2 -> Observable.just(LampProfile.Luminosity.MEDIUM)
                     3 -> Observable.just(LampProfile.Luminosity.HIGH)
                     4 -> Observable.just(LampProfile.Luminosity.MAX)
-                    else -> Observable.error(Throwable("102"))
-                }}
+                    else -> Observable.error(Throwable(Status.OPERATION_ERROR)) }}
             .share()!!
 
 
@@ -74,16 +64,17 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
         =   Observable.just(bleConnection)
                         .observeOn(Schedulers.from(bluetoothExecutor))
                         .flatMap {
-                it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
-                        .toObservable() }
+                                  it.readCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID))
+                                          .toObservable()
+                                          .doOnError { throw Throwable(Status.OPERATION_ERROR) }
+                        }
                         .flatMap {
                                 Observable.just(it[0].toInt()) }
                         .flatMap {
                 when (it) {
                     0 -> Observable.just(LampProfile.State.OFF)
                     1 ->  Observable.just(LampProfile.State.ON)
-                    else -> Observable.error(Throwable("102"))
-                }}
+                    else -> Observable.error(Throwable(Status.OPERATION_ERROR)) }}
                         .share()!!
 
 
@@ -91,16 +82,17 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
             =  Observable.just(bleConnection)
                          .observeOn(Schedulers.from(bluetoothExecutor))
                          .flatMap {
-                it.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID),
+                                 it.writeCharacteristic(UUID.fromString(LampProfile.STATE_CHARACTERISTIC_UUID),
                                                                 byteArrayOf(state.value.toByte()))
-                         .toObservable()}
+                                                .toObservable()
+                                                .doOnError { throw Throwable(Status.OPERATION_ERROR) }}
                          .flatMap {
                              Observable.just(it[0].toInt()) }
                          .flatMap {
                                 when (it) {
                                     0 -> Observable.just(LampProfile.State.OFF)
                                     1 ->  Observable.just(LampProfile.State.ON)
-                                    else -> Observable.error(Throwable("102")) }}
+                                    else -> Observable.error(Throwable(Status.OPERATION_ERROR)) }}
                          .share()!!
 
 
@@ -111,7 +103,8 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                           .observeOn(Schedulers.from(bluetoothExecutor))
                           .flatMap {
                                  it.writeCharacteristic(UUID.fromString(LampProfile.LUMINOSITY_CHARACTERISTIC_UUID), byteArrayOf(level.value.toByte()))
-                                .toObservable() }
+                                         .toObservable()
+                                         .doOnError { throw Throwable(Status.OPERATION_ERROR) }}
                           .flatMap {
                                 Observable.just(it[0].toInt())
                             }
@@ -122,8 +115,7 @@ class LampRepository(private val lampBleDevice: Observable<RxBleDevice>,
                                     2 -> Observable.just(LampProfile.Luminosity.MEDIUM)
                                     3 -> Observable.just(LampProfile.Luminosity.HIGH)
                                     4 -> Observable.just(LampProfile.Luminosity.MAX)
-                                    else -> Observable.error(Throwable("unknown value"))
-                                }}
+                                    else -> Observable.error(Throwable(Status.OPERATION_ERROR)) }}
                            .share()!!
 
 

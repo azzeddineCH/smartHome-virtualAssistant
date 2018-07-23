@@ -16,7 +16,7 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
         val TAG = "AirConditionerViewModel"
     }
     private val mAirConditionerConnectionState:MutableLiveData<RxBleConnection.RxBleConnectionState> = MutableLiveData()
-    private val mBluetoothErrorStatus:MutableLiveData<Int> = MutableLiveData()
+    private val mBluetoothErrorStatus:MutableLiveData<String> = MutableLiveData()
 
     private val mAirConditionerPowerState:MutableLiveData<BroadLinkProfile.AirConditionerProfile.State> = MutableLiveData()
     private val mAirConditionerMode:MutableLiveData<BroadLinkProfile.AirConditionerProfile.Mode> = MutableLiveData()
@@ -138,6 +138,7 @@ class AirConditionerViewModel(private val airConditionerRepository: AirCondition
 
 
     fun getAirConditionerConnectionStateLiveData():LiveData<RxBleConnection.RxBleConnectionState> = mAirConditionerConnectionState
+    fun getAirConditionerConnectionErrorLiveData():LiveData<String> = mBluetoothErrorStatus
     fun getAirConditionerPowerStateLiveData():LiveData<BroadLinkProfile.AirConditionerProfile.State> = mAirConditionerPowerState
     fun getAirConditionerModeLiveData():LiveData<BroadLinkProfile.AirConditionerProfile.Mode> = mAirConditionerMode
     fun getAirConditionerTempLiveData():LiveData<Int> = mAirConditionerTemp

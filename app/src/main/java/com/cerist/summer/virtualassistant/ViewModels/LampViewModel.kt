@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
+import com.cerist.summer.virtualassistant.Utils.Data.Status
 import com.polidea.rxandroidble2.RxBleConnection
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
@@ -18,7 +19,7 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
 
 
     private val  mLampBleConnectionState:MutableLiveData<RxBleConnection.RxBleConnectionState> = MutableLiveData()
-    private val  mBluetoothErrorStatus:MutableLiveData<Int> = MutableLiveData()
+    private val  mBluetoothErrorStatus:MutableLiveData<String> = MutableLiveData()
 
     private val  mLampPowerState:MutableLiveData<LampProfile.State> = MutableLiveData()
     private val  mLampLuminosityLevel:MutableLiveData<LampProfile.Luminosity> = MutableLiveData()
@@ -33,12 +34,14 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
             Log.d(TAG,"subscribing to the RxBleConnectionState")
                     bleConnection = it
         },{
-            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
+            Log.d(TAG,"error while subscribing to the RxBleConnectionState ${it.message}")
+            mBluetoothErrorStatus.postValue(Status.BLUETOOTH_CONNECTION_LOST)
         }))
+
 
         compositeDisposable.add(lampRepository.lampConnectionState.subscribe(
                 mLampBleConnectionState::postValue,{
-            Log.d(TAG,"error while subscribing to the RxBleConnectionState${it.message}")
+            Log.d(TAG,"error while subscribing to the RxBleConnectionState ${it.message}")
         }))
 
 
@@ -54,14 +57,15 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
                             if(isDeviceConnected())
                                 Observable.just(it)
                             else
-                                Observable.error(Throwable("device not connected"))
+                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST))
                         }
                         .flatMap {
                                     lampRepository.getLampLuminosityLevel(bleConnection!!)}
                         .subscribe(mLampLuminosityLevel::postValue,{
-
-                            }))
+                            mBluetoothErrorStatus.postValue(it.message)}))
     }
+
+
     fun getLampPowerState(){
         compositeDisposable.add(
                 Observable.just(Unit)
@@ -69,13 +73,12 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
                             if(isDeviceConnected())
                                 Observable.just(it)
                             else
-                                Observable.error(Throwable("device not connected"))
+                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST))
                         }
                         .flatMap {
                           lampRepository.getLampPowerState(bleConnection!!)}
                 .subscribe(mLampPowerState::postValue,{
-
-                }))
+                    mBluetoothErrorStatus.postValue(it.message)}))
     }
 
 
@@ -87,13 +90,14 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
                             if(isDeviceConnected())
                                 Observable.just(it)
                             else
-                                Observable.error(Throwable("device not connected"))
+                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST))
                         }
                           .flatMap {
                               lampRepository.setLampPowerState(bleConnection!!,it) }
                           .subscribe(mLampPowerState::postValue,{
-                          }))
+                              mBluetoothErrorStatus.postValue(it.message)}))
     }
+
     fun setLampLuminosityLevel(level: LampProfile.Luminosity){
         compositeDisposable.add(
                 Observable.just(level)
@@ -101,21 +105,20 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
                            if(isDeviceConnected())
                                 Observable.just(it)
                             else
-                               Observable.error(Throwable("device not connected"))
+                               Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST))
                         }
                          .flatMap {
                             lampRepository.setLampLuminosityLevel(bleConnection!!,it)
                         }
                          .subscribe(mLampLuminosityLevel::postValue,{
-
-                }))
+                                mBluetoothErrorStatus.postValue(it.message)}))
     }
 
 
     fun getLampPowerStateLiveData(): LiveData<LampProfile.State> = mLampPowerState
     fun getLampLuminosityLevelLiveData(): LiveData<LampProfile.Luminosity> = mLampLuminosityLevel
     fun getLampConnectionStateLiveData():LiveData<RxBleConnection.RxBleConnectionState> = mLampBleConnectionState
-    fun getLampConnectionErrorLiveData():LiveData<Int> = mBluetoothErrorStatus
+    fun getLampConnectionErrorLiveData():LiveData<String> = mBluetoothErrorStatus
 
 
 

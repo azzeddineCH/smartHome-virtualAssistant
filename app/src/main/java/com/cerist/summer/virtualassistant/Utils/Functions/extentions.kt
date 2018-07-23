@@ -4,6 +4,7 @@ import android.arch.lifecycle.*
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentActivity
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import com.cerist.summer.virtualassistant.Repositories.AirConditionerRepository
 import com.cerist.summer.virtualassistant.Repositories.DialogRepository
 import com.cerist.summer.virtualassistant.Repositories.LampRepository
@@ -17,23 +18,7 @@ import com.cerist.summer.virtualassistant.ViewModels.TvViewModel
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Observable
 
-fun <T> Observable<T>.toLiveData(backPressureStrategy: BackpressureStrategy =
-                                                    BackpressureStrategy.LATEST) :  LiveData<T> {
 
-    return LiveDataReactiveStreams.fromPublisher(this.toFlowable(backPressureStrategy))
-}
-
-fun <T> LiveData<T>.take(count:Int): LiveData<T> {
-    val mutableLiveData: MediatorLiveData<T> = MediatorLiveData()
-    var takenCount = 0
-    mutableLiveData.addSource(this, {
-        if(takenCount<count) {
-            mutableLiveData.value = it
-            takenCount++
-        }
-    })
-    return mutableLiveData
-}
 
 
 fun Fragment.getViewModel(type: Repositories): ViewModel {
@@ -82,4 +67,9 @@ fun AppCompatActivity.getViewModel(activity:FragmentActivity,type: Repositories)
 
 }
 
-fun <A, B> LiveData<A>.switchMap(function: (A) -> LiveData<B>): LiveData<B> = Transformations.switchMap(this, function)
+fun  AppCompatActivity.getStringResourceByName(s: String):String{
+        val packageName = this.packageManager.getPackageInfo(this.packageName,0).applicationInfo.dataDir
+        val resId = resources.getIdentifier("_$s", "string", packageName)
+        return this.getString(resId)
+
+}

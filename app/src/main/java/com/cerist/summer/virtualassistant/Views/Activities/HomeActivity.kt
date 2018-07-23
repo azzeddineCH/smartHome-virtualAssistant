@@ -15,6 +15,7 @@ import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.cerist.summer.virtualassistant.Utils.Functions.getViewModel
 import com.cerist.summer.virtualassistant.R
 import com.cerist.summer.virtualassistant.Utils.BaseComponents.BaseRecognitionActivity
+import com.cerist.summer.virtualassistant.Utils.Functions.getStringResourceByName
 import com.cerist.summer.virtualassistant.Views.Fragments.DialogFragment
 import com.cerist.summer.virtualassistant.Utils.Repositories
 import com.cerist.summer.virtualassistant.ViewModels.AirConditionerViewModel
@@ -82,13 +83,18 @@ class HomeActivity: BaseRecognitionActivity(),
 
         mLampViewModel.getLampLuminosityLevelLiveData().observe(this, Observer{
             Log.d(TAG,"subscribing to the lamp luminosity change")
-            mTextToSpeech.speak("${getString(R.string.lamp_mode_indicator)} $it",TextToSpeech.QUEUE_FLUSH,null,it?.hashCode().toString())
+            mTextToSpeech.speak("${getString(R.string.lamp_mode_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
 
         })
 
         mLampViewModel.getLampPowerStateLiveData().observe(this, Observer{
             Log.d(TAG,"subscribing to the lamp power state changes")
-            mTextToSpeech.speak("${getString(R.string.lamp_power_state_indicator)} $it",TextToSpeech.QUEUE_FLUSH,null,it?.hashCode().toString())
+            mTextToSpeech.speak("${getString(R.string.lamp_power_state_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
+        })
+
+        mLampViewModel.getLampConnectionErrorLiveData().observe(this, Observer {
+            Log.d(TAG,"subscribing to the lamp errors changes")
+            mTextToSpeech.speak(getStringResourceByName(it!!),TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
         })
 
 
@@ -101,6 +107,11 @@ class HomeActivity: BaseRecognitionActivity(),
         })
 
         mTvViewModel.getTvVolumeLevelLiveData().observe(this, Observer {
+
+        })
+
+        mTvViewModel.getTvConnectionErrorLiveData().observe(this, Observer {
+            Log.d(TAG,"subscribing to the tv errors changes")
 
         })
 
@@ -123,6 +134,11 @@ class HomeActivity: BaseRecognitionActivity(),
 
         })
 
+        mAirConditionerViewModel.getAirConditionerConnectionErrorLiveData().observe(this, Observer {
+            Log.d(TAG,"subscribing to the tv errors changes")
+
+        })
+
 
         /**
          * Observing the BOT text responses
@@ -130,7 +146,12 @@ class HomeActivity: BaseRecognitionActivity(),
 
         mDialogViewModel.getTextResponse().observe(this, Observer {
             Log.d(TAG,"subscribing to the text response changes")
-            mTextToSpeech.speak(it,TextToSpeech.QUEUE_FLUSH,null,it?.hashCode().toString())
+            mTextToSpeech.speak(it,TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
+        })
+
+        mDialogViewModel.getDialogErrorStatus().observe(this, Observer {
+            Log.d(TAG,"subscribing to the text response changes")
+            mTextToSpeech.speak(it,TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
         })
 
 
@@ -150,7 +171,7 @@ class HomeActivity: BaseRecognitionActivity(),
                 })
 
         mDialogViewModel.getDevicePowerStateCheckAction().observe(this, Observer {
-
+            Log.d(TAG,"subscribing to the lamp power state check action")
                          val device = it?.device
                          when(device){
                                 ChatBotProfile.Device.TV -> mTvViewModel.getTvPowerState()
@@ -169,6 +190,7 @@ class HomeActivity: BaseRecognitionActivity(),
 
         mDialogViewModel.getDeviceBrightnessSetAction().observe(this, Observer {
                     val level = it?.luminosity
+                    Log.d(TAG,"subscribing to the lamp luminosity set action: $level")
                     mLampViewModel.setLampLuminosityLevel(LampProfile.Luminosity.valueOf(level!!.name))
                 })
 

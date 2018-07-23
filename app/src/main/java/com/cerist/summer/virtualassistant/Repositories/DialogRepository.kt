@@ -3,6 +3,7 @@ package com.cerist.summer.virtualassistant.Repositories
 import ai.api.AIDataService
 import ai.api.AIServiceException
 import ai.api.model.*
+import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.ChatBotProfile
 import com.cerist.summer.virtualassistant.Utils.Data.ResponseIntentListing
 import com.cerist.summer.virtualassistant.Utils.Data.ResponseParametersListing
@@ -23,7 +24,7 @@ class DialogRepository( private val AIService:AIDataService,
      var dialogTextRequest: PublishSubject<String> = PublishSubject.create()
 
 
-     var dialogResponse:Observable<AIResponse>  = dialogTextRequest
+     private var dialogResponse:Observable<AIResponse>  = dialogTextRequest
               .observeOn(Schedulers.from(networkExecutor))
               .flatMap {
                 val aiRequest = AIRequest(it)
@@ -32,8 +33,7 @@ class DialogRepository( private val AIService:AIDataService,
                         val response = AIService.request(aiRequest)
                         it.onNext(response)
                     }catch (e:AIServiceException){
-                        e.printStackTrace()
-                        it.onError(Throwable("error: ${e.message}"))
+                        it.onError(Throwable(com.cerist.summer.virtualassistant.Utils.Data.Status.OPERATION_ERROR))
                     }
                 }
             }
@@ -66,6 +66,7 @@ class DialogRepository( private val AIService:AIDataService,
 
     private val dialogIntentsDispatcher = dialogResponse.observeOn(Schedulers.from(networkExecutor))
             .flatMap {
+                Log.d(TAG,"CHECKING ${it.result.action.substringBeforeLast(".")}")
               Observable.just(ResponseIntentListing(
                       action = it.result.action.substringBeforeLast("."),
                       parameters = it.result.parameters,
@@ -74,31 +75,37 @@ class DialogRepository( private val AIService:AIDataService,
             .share()
 
 
+
      val devicePowerStateSetAction:Observable<ResponseParametersListing> =  dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
-            .filter{
+             .filter{
                 it.action == ChatBotProfile.DEVICE_SWITCH_SET_ACTION_KEY }
-            .flatMap {
-                val state = it.parameters[ChatBotProfile.DEVICE_STATE_PARAMETER_KEY]?.asString!!
-
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
-                                it.outputContexts["DEVICE-SWITCH"]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-
-                val mapped = devices!!.map{
-                    ResponseParametersListing(
-                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString)),
-                            powerState = ChatBotProfile.State.valueOf(ChatBotProfile.parameterValueMapper(state))
-                    )
-                        }.subList(0,devices.size())
-                        Observable.fromIterable(mapped)
-                    }
-            .share()
+             .flatMap {
+                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
+                        ?: it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
+                val state = it.parameters[ChatBotProfile.DEVICE_STATE_PARAMETER_KEY]?.asString
+                Observable.just(Pair(devices,state)) }
+             .filter {
+                 it.first != null && it.second != null
+             }
+             .flatMap {
+                    val state = it.second!!
+                    val devices = it.first!!
+                    val mapped = devices.map{
+                     ResponseParametersListing(
+                             device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString)),
+                             powerState = ChatBotProfile.State.valueOf(ChatBotProfile.parameterValueMapper(state))
+                     )
+                 }.subList(0,devices.size())
+                 Observable.fromIterable(mapped)}
+             .share()
 
 
      val devicePowerStateCheckAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
             .filter{
                 it.action == ChatBotProfile.DEVICE_SWITCH_CHECK_ACTION_KEY }
             .flatMap {
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
+                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
+                         it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
 
                 val mapped = devices!!.map{
                     ResponseParametersListing(
@@ -111,19 +118,25 @@ class DialogRepository( private val AIService:AIDataService,
 
 
     val deviceBrightnessSetAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
-            .filter{
+            .filter {
                 it.action == ChatBotProfile.DEVICE_BRIGHTNESS_SET_ACTION_KEY }
             .flatMap {
-                val luminosityLevel = it.parameters[ChatBotProfile.DEVICE_BRIGHTNESS_PARAMETER_KEY]?.asString!!
+                val luminosityLevel = it.parameters[ChatBotProfile.DEVICE_BRIGHTNESS_PARAMETER_KEY]?.asString
+                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
+                                     it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
+                Observable.just(Pair(devices,luminosityLevel))}
+            .filter {
+                it.first != null && it.second != null
+            }
+            .flatMap {
+                val luminosityLevel = it.second!!
+                val devices = it.first!!
 
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-
-                val mapped = devices!!.map{
+                val mapped = devices.map{
                     ResponseParametersListing(
                             device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString)),
-                            luminosity = ChatBotProfile.Luminosity.valueOf(ChatBotProfile.parameterValueMapper(luminosityLevel))
-                    )
-                }.subList(0,devices.size())
+                            luminosity = ChatBotProfile.Luminosity.valueOf(ChatBotProfile.parameterValueMapper(luminosityLevel))) }
+                        .subList(0,devices.size())
                 Observable.fromIterable(mapped)
             }
             .share()
@@ -132,11 +145,11 @@ class DialogRepository( private val AIService:AIDataService,
             .filter{
                 it.action == ChatBotProfile.DEVICE_BRIGHTNESS_CHECK_ACTION_KEY }
             .flatMap {
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-
+                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
+                                   it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
                 val mapped = devices!!.map{
                     ResponseParametersListing(
-                            device = ChatBotProfile.Device.valueOf(it.asString)
+                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString))
                     )
                 }.subList(0,devices.size())
                 Observable.fromIterable(mapped)

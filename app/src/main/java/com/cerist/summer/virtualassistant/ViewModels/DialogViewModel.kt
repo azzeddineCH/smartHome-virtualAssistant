@@ -1,14 +1,13 @@
 package com.cerist.summer.virtualassistant.ViewModels
 
 import ai.api.model.AIContext
-import ai.api.model.Status
+import com.cerist.summer.virtualassistant.Utils.Data.Status
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.cerist.summer.virtualassistant.Repositories.DialogRepository
 import com.cerist.summer.virtualassistant.Utils.Data.ResponseParametersListing
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 
 class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel(){
@@ -19,7 +18,8 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
 
     private val mDialogContexts: MutableLiveData<List<AIContext>> = MutableLiveData()
     private val mTextResponse: MutableLiveData<String> = MutableLiveData()
-    private val mDialogRequestStatus:MutableLiveData<Status> = MutableLiveData()
+    private val mDialogErrorStatus:MutableLiveData<String> = MutableLiveData()
+
 
     private val mDevicePowerStateSetAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
     private val mDevicePowerStateCheckAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
@@ -30,51 +30,42 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
 
     init {
 
-        compositeDisposable.add(mDialogRepository.dialogTextResponse.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                mTextResponse::setValue,{
-                             Log.d(TAG,"error dialogTextResponse: ${it.message}")
+        compositeDisposable.add(mDialogRepository.dialogTextResponse.subscribe(
+                mTextResponse::postValue){
+           mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
+
+        compositeDisposable.add(mDialogRepository.dialogContexts.subscribe(
+                mDialogContexts::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
+
+        compositeDisposable.add(mDialogRepository.dialogStatus.subscribe(
+                {},{
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
         }))
 
-        compositeDisposable.add(mDialogRepository.dialogContexts.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                mDialogContexts::setValue,{
-                             Log.d(TAG,"error dialogContexts: ${it.message}")
-        }))
+        compositeDisposable.add(mDialogRepository.devicePowerStateSetAction.subscribe(
+                mDevicePowerStateSetAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
 
-        compositeDisposable.add(mDialogRepository.dialogStatus.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mDialogRequestStatus::setValue,{
-                    Log.d(TAG,"error dialogStatus: ${it.message}")
-                }))
+        compositeDisposable.add(mDialogRepository.devicePowerStateCheckAction.subscribe(
+                mDevicePowerStateCheckAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
 
-        compositeDisposable.add(mDialogRepository.devicePowerStateSetAction.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                mDevicePowerStateSetAction::setValue,{
-                            Log.d(TAG,"error devicePowerStateSetAction: ${it.message}")
-        }))
+        compositeDisposable.add(mDialogRepository.deviceBrightnessSetAction.subscribe(
+            mDeviceBrightnessSetAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
 
-        compositeDisposable.add(mDialogRepository.devicePowerStateCheckAction.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                mDevicePowerStateCheckAction::setValue,{
-                            Log.d(TAG,"error devicePowerStateCheckAction: ${it.message}")
-        }))
 
-        compositeDisposable.add(mDialogRepository.deviceBrightnessSetAction.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                mDevicePowerStateCheckAction::setValue,{
-            Log.d(TAG,"error deviceBrightnessSetAction: ${it.message}")
-        }))
 
-        compositeDisposable.add(mDialogRepository.deviceBrightnessSetAction.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                mDevicePowerStateCheckAction::setValue,{
-            Log.d(TAG,"error deviceBrightnessSetAction: ${it.message}")
-        }))
-
-        compositeDisposable.add(mDialogRepository.deviceBrightnessCheckAction.observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mDeviceBrightnessCheckAction::setValue,{
-            Log.d(TAG,"error deviceBrightnessCheckAction: ${it.message}")
-        }))
+        compositeDisposable.add(mDialogRepository.deviceBrightnessCheckAction.subscribe(
+                mDeviceBrightnessCheckAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
 
 
 
@@ -82,7 +73,7 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
 
     fun getTextResponse():LiveData<String> = mTextResponse
     fun getDialogContext():LiveData<List<AIContext>> = mDialogContexts
-    fun getDialogRequestStatus():LiveData<Status> = mDialogRequestStatus
+    fun getDialogErrorStatus():LiveData<String> = mDialogErrorStatus
 
     fun getDevicePowerStateSetAction():LiveData<ResponseParametersListing> = mDevicePowerStateSetAction
     fun getDevicePowerStateCheckAction():LiveData<ResponseParametersListing> = mDevicePowerStateCheckAction
