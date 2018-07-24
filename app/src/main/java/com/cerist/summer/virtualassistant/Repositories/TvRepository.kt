@@ -26,10 +26,7 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
     init {
 
         broadLinkConnection = broadLinkRepository.broadLinkConnection
-
         broadLinkConnectionState =  broadLinkRepository.broadLinkConnectionState
-
-
 
     }
 

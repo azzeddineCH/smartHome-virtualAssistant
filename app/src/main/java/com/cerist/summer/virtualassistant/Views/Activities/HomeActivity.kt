@@ -45,6 +45,7 @@ class HomeActivity: BaseRecognitionActivity(),
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG,"onStart")
         setContentView(R.layout.home_activity)
 
         mSpeechRecognizer =  SpeechRecognizer.createSpeechRecognizer(this)
@@ -59,6 +60,7 @@ class HomeActivity: BaseRecognitionActivity(),
 
     override fun onStart() {
         super.onStart()
+        Log.d(TAG,"onStart")
 
         supportFragmentManager.beginTransaction()
                 .add(R.id.fragment_container,DialogFragment())
@@ -217,6 +219,7 @@ class HomeActivity: BaseRecognitionActivity(),
 
     }
 
+
     override fun onInit(status: Int) {
         Log.d(TAG,"onInit")
         if(status == TextToSpeech.SUCCESS){
@@ -225,6 +228,12 @@ class HomeActivity: BaseRecognitionActivity(),
     }
 
 
+    override fun onDestroy() {
+        super.onDestroy()
 
-
+        mTextToSpeech.stop()
+        mTextToSpeech.shutdown()
+        mSpeechRecognizer.stopListening()
+        mSpeechRecognizer.destroy()
+    }
 }

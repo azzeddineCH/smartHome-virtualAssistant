@@ -94,8 +94,10 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
                         }
                           .flatMap {
                               lampRepository.setLampPowerState(bleConnection!!,it) }
-                          .subscribe(mLampPowerState::postValue) {
-                              mBluetoothErrorStatus.postValue(Status.OPERATION_ERROR)})
+                          .subscribe({
+                              Log.d(TAG,"changing")
+                              mLampPowerState.postValue(it)},{
+                              mBluetoothErrorStatus.postValue(Status.OPERATION_ERROR)}))
     }
 
     fun setLampLuminosityLevel(level: LampProfile.Luminosity){
@@ -108,8 +110,7 @@ class LampViewModel(private val lampRepository:LampRepository):ViewModel(){
                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST))
                         }
                          .flatMap {
-                            lampRepository.setLampLuminosityLevel(bleConnection!!,it)
-                        }
+                            lampRepository.setLampLuminosityLevel(bleConnection!!,it) }
                          .subscribe(mLampLuminosityLevel::postValue) {
                              mBluetoothErrorStatus.postValue(Status.OPERATION_ERROR)})
     }

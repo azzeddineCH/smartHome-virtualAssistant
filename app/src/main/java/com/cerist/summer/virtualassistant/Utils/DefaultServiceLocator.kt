@@ -8,6 +8,7 @@ import android.util.Log
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Entities.LampProfile
 import com.cerist.summer.virtualassistant.Repositories.*
+import com.cerist.summer.virtualassistant.Utils.Functions.requestLocationPermissions
 import com.jakewharton.rx.replayingShare
 import com.polidea.rxandroidble2.RxBleClient
 import com.polidea.rxandroidble2.RxBleDevice
@@ -57,13 +58,14 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
                                                .share()
 
 
-         bluetoothScan =  bluetoothClientState.filter{it == RxBleClient.State.READY}
+         bluetoothScan =  bluetoothClientState.observeOn(Schedulers.from(getBlueToothExecutor()))
+                 .filter{it == RxBleClient.State.READY}
                  .delay(1000,TimeUnit.MILLISECONDS)
                  .flatMap {
+                     Log.d(TAG,"I am here 0")
                     blueToothClient.scanBleDevices(
                             ScanSettings.Builder()
                                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                                    .setCallbackType(ScanSettings.CALLBACK_TYPE_FIRST_MATCH)
                                     .build(),
                             ScanFilter.Builder().build())}
                  .share()
@@ -71,7 +73,10 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
 
 
 
-        broadLinkBleDevice = bluetoothScan.filter { it.bleDevice.macAddress ==  BroadLinkProfile.DEVICE_MAC_ADDRESS}
+
+
+        broadLinkBleDevice = bluetoothScan.observeOn(Schedulers.from(getBlueToothExecutor()))
+                                          .filter { it.bleDevice.macAddress ==  BroadLinkProfile.DEVICE_MAC_ADDRESS}
                                           .flatMap { result ->
                                                            Log.d(TAG, "the device named ${result.bleDevice.name} is found")
                                                   Observable.just(result.bleDevice) }
@@ -82,12 +87,13 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
 
 
 
-        lampBleDevice =   bluetoothScan.filter { it.bleDevice.macAddress == LampProfile.DEVICE_MAC_ADDRESS }
-                                       .flatMap { result ->
+        lampBleDevice =   bluetoothScan.observeOn(Schedulers.from(getBlueToothExecutor()))
+                                        .filter { it.bleDevice.macAddress == LampProfile.DEVICE_MAC_ADDRESS }
+                                        .flatMap { result ->
                                                       Log.d(TAG, "the device named ${result.bleDevice.name} is found")
                                            Observable.just(result.bleDevice)}
-                                       .share()
-                                       .retry()
+                                        .share()
+                                        .retry()
 
 
 
