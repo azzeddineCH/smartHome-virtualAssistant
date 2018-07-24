@@ -18,6 +18,7 @@ import com.polidea.rxandroidble2.scan.ScanSettings
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -30,7 +31,6 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
 
 
     private var blueToothClient = RxBleClient.create(activity)
-    private var rxPermissions = RxPermissions(activity)
 
     private val BLUETOOTH_IO = Executors.newFixedThreadPool(2)
     private val NETWORK_IO = Executors.newFixedThreadPool(1)
@@ -62,7 +62,6 @@ class DefaultServiceLocator (private val activity: FragmentActivity): ServiceLoc
                  .filter{it == RxBleClient.State.READY}
                  .delay(1000,TimeUnit.MILLISECONDS)
                  .flatMap {
-                     Log.d(TAG,"I am here 0")
                     blueToothClient.scanBleDevices(
                             ScanSettings.Builder()
                                     .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)

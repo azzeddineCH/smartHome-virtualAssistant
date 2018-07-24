@@ -20,7 +20,6 @@ class DialogFragment:Fragment(){
     }
 
 
-    private lateinit var mLampViewModel:LampViewModel
     private lateinit var onAudioRecordingButtonClickListener: AudioRecordingButtonTouchListener
 
 
@@ -35,52 +34,20 @@ class DialogFragment:Fragment(){
         onAudioRecordingButtonClickListener = context as AudioRecordingButtonTouchListener
 
 
-        mLampViewModel  =  getViewModel(Repositories.LAMP_REPOSITORY) as LampViewModel
+
 
 
 
         button.setOnClickListener {
-            onAudioRecordingButtonClickListener.onAudioRecordingButtonTouch(MotionEvent.ACTION_DOWN)
+            onAudioRecordingButtonClickListener.onAudioRecordingButtonTouch()
         }
-        button2.setOnClickListener {
-            onAudioRecordingButtonClickListener.onAudioRecordingButtonTouch(MotionEvent.ACTION_UP)
-        }
-
-
-        button3.setOnClickListener {
-            mLampViewModel.setLampPowerState(LampProfile.State.OFF)
-        }
-
-        button4.setOnClickListener {
-            mLampViewModel.setLampPowerState(LampProfile.State.ON)
-
-        }
-
-        button5.setOnClickListener {
-            mLampViewModel.getLampPowerState()
-
-        }
-
-
-        button6.setOnClickListener {
-            mLampViewModel.getLampLuminosityLevel()
-
-        }
-
-
-        button7.setOnClickListener {
-                mLampViewModel.setLampLuminosityLevel(LampProfile.Luminosity.LOW)
-
-        }
-
-
 
 
     }
 
 
     interface AudioRecordingButtonTouchListener{
-        fun onAudioRecordingButtonTouch(action:Int)
+        fun onAudioRecordingButtonTouch()
     }
 
 
