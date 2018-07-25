@@ -221,7 +221,8 @@ class HomeActivity: BaseRecognitionActivity(),
             Log.d(TAG,"subscribing to the TV volume set action")
 
             val volume = it?.volume !!
-            mTvViewModel.setTvVolumLevel(volume)
+            //mTvViewModel.setTvVolumLevel(volume)
+            mAirConditionerViewModel.setAirConditionerTemp(volume)
         })
 
         mDialogViewModel.getDeviceModeCheckAction().observe(this, Observer {

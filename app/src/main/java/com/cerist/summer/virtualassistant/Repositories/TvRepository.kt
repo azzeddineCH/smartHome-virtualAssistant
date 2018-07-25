@@ -92,10 +92,10 @@ fun setTvPowerState(bleConnection: RxBleConnection,state: BroadLinkProfile.TvPro
                 .flatMap {
                     Log.d(TAG,"Writing the tv volume level characteristic")
                     if(volume > it)
-                        broadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_UP_CHARACTERISTIC_UUID),
+                        bleConnection.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_UP_CHARACTERISTIC_UUID),
                             byteArrayOf(volume.toByte())).toObservable()
                     else
-                        broadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_DOWN_CHARACTERISTIC_UUID),
+                        bleConnection.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_DOWN_CHARACTERISTIC_UUID),
                                 byteArrayOf(volume.toByte())).toObservable() }
                 .flatMap {
                     Observable.just(it[0].toInt()) }

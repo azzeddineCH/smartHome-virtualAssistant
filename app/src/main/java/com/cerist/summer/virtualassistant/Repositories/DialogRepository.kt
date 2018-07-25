@@ -196,6 +196,7 @@ class DialogRepository( private val AIService:AIDataService,
             .flatMap {
                 val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.TV.name
                 val number = it.parameters[ChatBotProfile.DEVICE_VOLUME_PARAMETER_KEY]?.asInt
+                Log.d(TAG,"it is $number")
                 Observable.just(Pair(device, number)) }
             .filter { it.second != null }
             .flatMap {

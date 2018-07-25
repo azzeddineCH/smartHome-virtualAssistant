@@ -143,10 +143,10 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                         .flatMap {
                                     Log.d(TAG,"Writing  the air conditioner temperature characteristic")
                                     if(temperature > it)
-                                        broadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.TEMPERATURE_UP_CHARACTERISTIC_UUID),
+                                        bleConnection.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.TEMPERATURE_UP_CHARACTERISTIC_UUID),
                                                 byteArrayOf(temperature.toByte())).toObservable()
                                     else
-                                        broadLinkConnection.blockingLast().writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.TEMPERATURE_DOWN_CHARACTERISTIC_UUID),
+                                        bleConnection.writeCharacteristic(UUID.fromString( BroadLinkProfile.AirConditionerProfile.TEMPERATURE_DOWN_CHARACTERISTIC_UUID),
                                                 byteArrayOf(temperature.toByte())).toObservable()
                                 }
                         .flatMap{
