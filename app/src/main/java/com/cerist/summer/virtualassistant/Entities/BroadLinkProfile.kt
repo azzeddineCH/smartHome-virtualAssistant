@@ -5,7 +5,7 @@ import java.util.*
 class BroadLinkProfile{
 
     companion object {
-        val DEVICE_MAC_ADDRESS ="B8:27:EB:AA:D6:51"
+        val DEVICE_MAC_ADDRESS ="B8:27:EB:D5:7B:85"
     }
 
     class AirConditionerProfile{

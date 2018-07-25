@@ -111,6 +111,7 @@ class HomeActivity: BaseRecognitionActivity(),
 
         mTvViewModel.getTvConnectionErrorLiveData().observe(this, Observer {
             Log.d(TAG,"subscribing to the tv errors changes")
+            mTextToSpeech.speak(getStringResourceByName(it!!),TextToSpeech.QUEUE_ADD,null,it.hashCode().toString())
 
         })
 
@@ -120,20 +121,23 @@ class HomeActivity: BaseRecognitionActivity(),
          */
 
         mAirConditionerViewModel.getAirConditionerPowerStateLiveData().observe(this, Observer {
-
+            Log.d(TAG,"subscribing to the air conditioner power state changes")
+            mTextToSpeech.speak("${getString(R.string.air_conditioner_state_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
         })
 
         mAirConditionerViewModel.getAirConditionerModeLiveData().observe(this, Observer {
-
+            Log.d(TAG,"subscribing to the air conditioner  mode changes")
+            mTextToSpeech.speak("${getString(R.string.air_conditioner_mode_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
         })
 
         mAirConditionerViewModel.getAirConditionerTempLiveData().observe(this, Observer {
-
+            Log.d(TAG,"subscribing to the air conditioner  temperature changes")
+            mTextToSpeech.speak("${getString(R.string.air_conditioner_temp_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
         })
 
         mAirConditionerViewModel.getAirConditionerConnectionErrorLiveData().observe(this, Observer {
             Log.d(TAG,"subscribing to the tv errors changes")
-
+            mTextToSpeech.speak(getStringResourceByName(it!!),TextToSpeech.QUEUE_ADD,null,it.hashCode().toString())
         })
 
 
@@ -192,6 +196,41 @@ class HomeActivity: BaseRecognitionActivity(),
             Log.d(TAG,"subscribing to the lamp luminosity set action: $level")
             mLampViewModel.setLampLuminosityLevel(LampProfile.Luminosity.valueOf(level.name))
         })
+
+        /**
+         * Observing the BOT responses to the device mode actions
+         */
+
+        mDialogViewModel.getDeviceModeSetAction().observe(this, Observer {
+            val mode = it?.airMode !!
+            Log.d(TAG,"subscribing to the air conditioner mode check action : $mode")
+            mAirConditionerViewModel.setAirConditionerMode(BroadLinkProfile.AirConditionerProfile.Mode.valueOf(mode.name))
+
+        })
+
+        mDialogViewModel.getDeviceModeCheckAction().observe(this, Observer {
+            mAirConditionerViewModel.getAirConditionerMode()
+        })
+
+
+        /**
+         * Observing the BOT responses to the device volume actions
+         */
+
+        mDialogViewModel.getDeviceVolumeSetAction().observe(this, Observer {
+            Log.d(TAG,"subscribing to the TV volume set action")
+
+            val volume = it?.volume !!
+            mTvViewModel.setTvVolumLevel(volume)
+        })
+
+        mDialogViewModel.getDeviceModeCheckAction().observe(this, Observer {
+            Log.d(TAG,"subscribing to the TV volume check action")
+            mAirConditionerViewModel.getAirConditionerMode()
+        })
+
+
+
     }
 
     override fun onStart() {

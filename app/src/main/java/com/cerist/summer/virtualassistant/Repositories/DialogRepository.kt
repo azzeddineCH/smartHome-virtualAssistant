@@ -127,22 +127,17 @@ class DialogRepository( private val AIService:AIDataService,
                 it.action == ChatBotProfile.DEVICE_BRIGHTNESS_SET_ACTION_KEY }
             .flatMap {
                 val luminosityLevel = it.parameters[ChatBotProfile.DEVICE_BRIGHTNESS_PARAMETER_KEY]?.asString
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
-                                     it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-                Observable.just(Pair(devices,luminosityLevel))}
+                val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.LAMP.name
+                Observable.just(Pair(device,luminosityLevel))}
             .filter {
-                it.first != null && it.second != null
+                it.second != null
             }
             .flatMap {
                 val luminosityLevel = it.second!!
-                val devices = it.first!!
-
-                val mapped = devices.map{
-                    ResponseParametersListing(
-                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString)),
-                            luminosity = ChatBotProfile.Luminosity.valueOf(ChatBotProfile.parameterValueMapper(luminosityLevel))) }
-                        .subList(0,devices.size())
-                Observable.fromIterable(mapped)
+                val device = it.first
+                Observable.just( ResponseParametersListing(
+                        device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(device)),
+                        luminosity = ChatBotProfile.Luminosity.valueOf(ChatBotProfile.parameterValueMapper(luminosityLevel))) )
             }
             .share()
 
@@ -150,14 +145,10 @@ class DialogRepository( private val AIService:AIDataService,
             .filter{
                 it.action == ChatBotProfile.DEVICE_BRIGHTNESS_CHECK_ACTION_KEY }
             .flatMap {
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
-                                   it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-                val mapped = devices!!.map{
-                    ResponseParametersListing(
-                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString))
-                    )
-                }.subList(0,devices.size())
-                Observable.fromIterable(mapped)
+                val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.LAMP.name
+
+                Observable.just( ResponseParametersListing(
+                        device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(device))))
             }
             .share()
 
@@ -170,33 +161,28 @@ class DialogRepository( private val AIService:AIDataService,
             .filter{
                 it.action == ChatBotProfile.DEVICE_MODE_SET_ACTION_KEY }
             .flatMap {
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
-                        it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-
-                val mode = it.parameters[ChatBotProfile.DEVICE_MODE_PARAMETER_KEY]?.asString!!
-                val mapped = devices!!.map{
+                val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.AIR_CONDITIONER.name
+                val mode = it.parameters[ChatBotProfile.DEVICE_MODE_PARAMETER_KEY]?.asString
+                Observable.just(Pair(device,mode))}
+            .filter {
+                it.second != null }
+            .flatMap {
+               Observable.just(
                     ResponseParametersListing(
-                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString)),
-                            airMode = ChatBotProfile.AirMode.valueOf(ChatBotProfile.parameterValueMapper(mode))
-                    )
-                }.subList(0,devices.size())
-                Observable.fromIterable(mapped)
-            }
+                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.first)),
+                            airMode = ChatBotProfile.AirMode.valueOf(ChatBotProfile.parameterValueMapper(it.second!!))
+                    )) }
             .share()
 
     val deviceModeCheckAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
             .filter{
                 it.action == ChatBotProfile.DEVICE_MODE_CHECK_ACTION_KEY }
             .flatMap {
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
-                            it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-
-                val mapped = devices!!.map{
-                    ResponseParametersListing(
-                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString))
-                    )
-                }.subList(0,devices.size())
-                Observable.fromIterable(mapped)
+                val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.AIR_CONDITIONER.name
+                Observable.just(
+                        ResponseParametersListing(
+                                device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(device))
+                        ))
             }
             .share()
 
@@ -208,17 +194,15 @@ class DialogRepository( private val AIService:AIDataService,
             .filter{
                 it.action == ChatBotProfile.DEVICE_VOLUME_SET_ACTION_KEY }
             .flatMap {
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
-                it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-
-                val number = it.parameters[ChatBotProfile.DEVICE_VOLUME_PARAMETER_KEY]?.asInt!!
-                val mapped = devices!!.map{
-                    ResponseParametersListing(
-                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString)),
-                            volume = number
-                    )
-                }.subList(0,devices.size())
-                Observable.fromIterable(mapped)
+                val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.TV.name
+                val number = it.parameters[ChatBotProfile.DEVICE_VOLUME_PARAMETER_KEY]?.asInt
+                Observable.just(Pair(device, number)) }
+            .filter { it.second != null }
+            .flatMap {
+                Observable.just(   ResponseParametersListing(
+                        device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.first)),
+                        volume = it.second
+                ))
             }
             .share()
 
@@ -226,15 +210,10 @@ class DialogRepository( private val AIService:AIDataService,
             .filter{
                 it.action == ChatBotProfile.DEVICE_VOLUME_CHECK_ACTION_KEY }
             .flatMap {
-                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
-                it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
-
-                val mapped = devices!!.map{
-                        ResponseParametersListing(
-                                device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString))
-                        )
-                }.subList(0,devices.size())
-                Observable.fromIterable(mapped)
+                val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.TV.name
+                Observable.just(ResponseParametersListing(
+                        device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(device))
+                ))
             }
             .share()
 }

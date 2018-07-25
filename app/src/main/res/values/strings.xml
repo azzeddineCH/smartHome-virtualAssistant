@@ -7,6 +7,9 @@
     <string name="lamp_mode_indicator">the brightness is set to</string>
     <string name="tv_state_indicator">The TV is</string>
     <string name="tv_volume_indicator">The TV volume is</string>
+    <string name="air_conditioner_state_indicator">The air conditioner is</string>
+    <string name="air_conditioner_mode_indicator">The air conditioner is on</string>
+    <string name="air_conditioner_temp_indicator">The temperature is set to</string>
 
     <!-- BOT error responses -->
     
