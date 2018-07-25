@@ -10,7 +10,8 @@ class BroadLinkProfile{
 
     class AirConditionerProfile{
 
-        companion object {
+        companion object
+        {
 
             const val STATE_CHARACTERISTIC_UUID = "44fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val MODE_CHARACTERISTIC_UUID = "43fac9e0-c111-11e3-9246-0002a5d5c51b"

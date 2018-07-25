@@ -6,7 +6,7 @@ class ChatBotProfile{
         const val DEVICE_NAME_PARAMETER_KEY = "Device"
         const val DEVICE_STATE_PARAMETER_KEY = "DeviceState"
         const val DEVICE_BRIGHTNESS_PARAMETER_KEY = "DeviceLuminosity"
-        const val DEVICE_MODE_PARAMETER_KEY = "DeviceMode"
+        const val DEVICE_MODE_PARAMETER_KEY = "AirMode"
         const val DEVICE_VOLUME_PARAMETER_KEY = "number"
 
 
