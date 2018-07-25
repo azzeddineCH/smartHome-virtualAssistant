@@ -23,8 +23,17 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
 
     private val mDevicePowerStateSetAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
     private val mDevicePowerStateCheckAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
+
     private val mDeviceBrightnessSetAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
     private val mDeviceBrightnessCheckAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
+
+    private val mDeviceModeSetAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
+    private val mDeviceModeCheckAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
+
+    private val mDeviceVolumeSetAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
+    private val mDeviceVolumeCheckAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
+
+
 
     private val compositeDisposable = CompositeDisposable()
 
@@ -61,12 +70,33 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
         })
 
 
-
         compositeDisposable.add(mDialogRepository.deviceBrightnessCheckAction.subscribe(
                 mDeviceBrightnessCheckAction::postValue){
             mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
         })
 
+
+        compositeDisposable.add(mDialogRepository.deviceModeSetAction.subscribe(
+                mDeviceModeSetAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
+
+
+        compositeDisposable.add(mDialogRepository.deviceModeCheckAction.subscribe(
+                mDeviceModeCheckAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
+
+        compositeDisposable.add(mDialogRepository.deviceVolumeSetAction.subscribe(
+                mDeviceVolumeSetAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
+
+
+        compositeDisposable.add(mDialogRepository.deviceVolumeCheckAction.subscribe(
+                mDeviceVolumeCheckAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
 
 
     }
@@ -81,6 +111,11 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
     fun getDeviceBrightnessSetAction():LiveData<ResponseParametersListing> = mDeviceBrightnessSetAction
     fun getDeviceBrightnessCheckAction():LiveData<ResponseParametersListing> = mDeviceBrightnessCheckAction
 
+    fun getDeviceModeSetAction():LiveData<ResponseParametersListing> = mDeviceModeSetAction
+    fun getDeviceModeCheckAction():LiveData<ResponseParametersListing> = mDeviceModeCheckAction
+
+    fun getDeviceVolumeSetAction():LiveData<ResponseParametersListing> = mDeviceVolumeSetAction
+    fun getDeviceVolumeCheckAction():LiveData<ResponseParametersListing> = mDeviceVolumeCheckAction
 
 
     fun setDialogTextRequest(text:String){

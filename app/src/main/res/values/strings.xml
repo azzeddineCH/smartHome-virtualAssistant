@@ -5,7 +5,9 @@
     <!-- BOT lamp responses -->
     <string name="lamp_power_state_indicator">The lights are</string>
     <string name="lamp_mode_indicator">the brightness is set to</string>
-    
+    <string name="tv_state_indicator">The TV is</string>
+    <string name="tv_volume_indicator">The TV volume is</string>
+
     <!-- BOT error responses -->
     
     <string name="_100">Sorry! Bluetooth not available</string>

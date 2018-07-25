@@ -74,8 +74,11 @@ class DialogRepository( private val AIService:AIDataService,
             .share()
 
 
+    /**
+     * Device Power state actions
+     */
 
-     val devicePowerStateSetAction:Observable<ResponseParametersListing> =  dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
+    val devicePowerStateSetAction:Observable<ResponseParametersListing> =  dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
              .filter{
                 it.action == ChatBotProfile.DEVICE_SWITCH_SET_ACTION_KEY }
              .flatMap {
@@ -116,6 +119,9 @@ class DialogRepository( private val AIService:AIDataService,
             .share()
 
 
+    /**
+     * Device Brightness Action
+     */
     val deviceBrightnessSetAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
             .filter {
                 it.action == ChatBotProfile.DEVICE_BRIGHTNESS_SET_ACTION_KEY }
@@ -155,4 +161,80 @@ class DialogRepository( private val AIService:AIDataService,
             }
             .share()
 
+
+
+    /**
+     * Device Mode Action
+     */
+    val deviceModeSetAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
+            .filter{
+                it.action == ChatBotProfile.DEVICE_MODE_SET_ACTION_KEY }
+            .flatMap {
+                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
+                        it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
+
+                val mode = it.parameters[ChatBotProfile.DEVICE_MODE_PARAMETER_KEY]?.asString!!
+                val mapped = devices!!.map{
+                    ResponseParametersListing(
+                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString)),
+                            airMode = ChatBotProfile.AirMode.valueOf(ChatBotProfile.parameterValueMapper(mode))
+                    )
+                }.subList(0,devices.size())
+                Observable.fromIterable(mapped)
+            }
+            .share()
+
+    val deviceModeCheckAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
+            .filter{
+                it.action == ChatBotProfile.DEVICE_MODE_CHECK_ACTION_KEY }
+            .flatMap {
+                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
+                            it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
+
+                val mapped = devices!!.map{
+                    ResponseParametersListing(
+                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString))
+                    )
+                }.subList(0,devices.size())
+                Observable.fromIterable(mapped)
+            }
+            .share()
+
+
+    /**
+     * Device Volume Actions
+     */
+    val deviceVolumeSetAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
+            .filter{
+                it.action == ChatBotProfile.DEVICE_VOLUME_SET_ACTION_KEY }
+            .flatMap {
+                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
+                it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
+
+                val number = it.parameters[ChatBotProfile.DEVICE_VOLUME_PARAMETER_KEY]?.asInt!!
+                val mapped = devices!!.map{
+                    ResponseParametersListing(
+                            device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString)),
+                            volume = number
+                    )
+                }.subList(0,devices.size())
+                Observable.fromIterable(mapped)
+            }
+            .share()
+
+    val deviceVolumeCheckAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
+            .filter{
+                it.action == ChatBotProfile.DEVICE_VOLUME_CHECK_ACTION_KEY }
+            .flatMap {
+                val devices = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray ?:
+                it.outputContexts[ChatBotProfile.DEVICE_SWITCH_CONTEXT]!!.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asJsonArray
+
+                val mapped = devices!!.map{
+                        ResponseParametersListing(
+                                device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.asString))
+                        )
+                }.subList(0,devices.size())
+                Observable.fromIterable(mapped)
+            }
+            .share()
 }

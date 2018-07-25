@@ -75,16 +75,17 @@ class HomeActivity: BaseRecognitionActivity(),
          * Observing the lamp luminosity and power state characteristics
          */
 
+        mLampViewModel.getLampPowerStateLiveData().observe(this, Observer{
+            Log.d(TAG,"subscribing to the lamp power state changes")
+            mTextToSpeech.speak("${getString(R.string.lamp_power_state_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
+        })
+
         mLampViewModel.getLampLuminosityLevelLiveData().observe(this, Observer{
             Log.d(TAG,"subscribing to the lamp luminosity change")
             mTextToSpeech.speak("${getString(R.string.lamp_mode_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
 
         })
 
-        mLampViewModel.getLampPowerStateLiveData().observe(this, Observer{
-            Log.d(TAG,"subscribing to the lamp power state changes")
-            mTextToSpeech.speak("${getString(R.string.lamp_power_state_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
-        })
 
         mLampViewModel.getLampConnectionErrorLiveData().observe(this, Observer {
             Log.d(TAG,"subscribing to the lamp errors changes")
@@ -97,10 +98,14 @@ class HomeActivity: BaseRecognitionActivity(),
          */
 
         mTvViewModel.getTvPowerStateLiveDate().observe(this, Observer {
+            Log.d(TAG,"subscribing to the tv power state changes")
+            mTextToSpeech.speak("${getString(R.string.tv_state_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
 
         })
 
         mTvViewModel.getTvVolumeLevelLiveData().observe(this, Observer {
+            Log.d(TAG,"subscribing to the tv volume changes")
+            mTextToSpeech.speak("${getString(R.string.tv_volume_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
 
         })
 
