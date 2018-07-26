@@ -38,12 +38,15 @@ class BroadLinkProfile{
             const val STATE_CHARACTERISTIC_UUID = "53fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val VOLUME_UP_CHARACTERISTIC_UUID = "51fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val VOLUME_DOWN_CHARACTERISTIC_UUID = "52fac9e0-c111-11e3-9246-0002a5d5c51b"
+            const val VOLUME_CHARACTERISTIC_UUID = "54fac9e0-c111-11e3-9246-0002a5d5c51b"
+            const val TIMER_CHARACTERISTIC_UUID = "55fac9e0-c111-11e3-9246-0002a5d5c51b"
             const val MAX_VOLUME = 99
             const val MIN_VOLUME = 0
+            val TV_TIMER_SET = arrayOf(0,15,30,60,90)
         }
         enum class State(val value: Int) {
             ON(1),
-            OFF(2)
+            OFF(0)
         }
     }
 }

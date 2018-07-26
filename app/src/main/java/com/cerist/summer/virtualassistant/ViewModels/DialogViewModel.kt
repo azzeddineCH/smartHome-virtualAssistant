@@ -33,6 +33,9 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
     private val mDeviceVolumeSetAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
     private val mDeviceVolumeCheckAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
 
+    private val mDeviceTimerSetAction:MutableLiveData<ResponseParametersListing> = MutableLiveData()
+
+
 
 
     private val compositeDisposable = CompositeDisposable()
@@ -98,6 +101,16 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
             mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
         })
 
+        compositeDisposable.add(mDialogRepository.deviceTimerSetAction.subscribe(
+                mDeviceTimerSetAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
+
+        compositeDisposable.add(mDialogRepository.deviceTimerDisableAction.subscribe(
+                mDeviceTimerSetAction::postValue){
+            mDialogErrorStatus.postValue(Status.OPERATION_ERROR)
+        })
+
 
     }
 
@@ -116,6 +129,9 @@ class DialogViewModel(private val mDialogRepository: DialogRepository):ViewModel
 
     fun getDeviceVolumeSetAction():LiveData<ResponseParametersListing> = mDeviceVolumeSetAction
     fun getDeviceVolumeCheckAction():LiveData<ResponseParametersListing> = mDeviceVolumeCheckAction
+
+    fun getDeviceTimerSetAction():LiveData<ResponseParametersListing> = mDeviceTimerSetAction
+
 
 
     fun setDialogTextRequest(text:String){

@@ -22,6 +22,7 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
 
     private val mTvPowerState: MutableLiveData<BroadLinkProfile.TvProfile.State> = MutableLiveData()
     private val mTvVolumeLevel: MutableLiveData<Int> = MutableLiveData()
+    private val mTvTimer: MutableLiveData<Int> = MutableLiveData()
 
     private var bleConnection:RxBleConnection ? = null
     private val compositeDisposable = CompositeDisposable()
@@ -97,7 +98,7 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
     }
 
 
-    fun setTvVolumLevel(level:Int) {
+    fun setTvVolumeLevel(level:Int) {
         compositeDisposable.add(
                 Observable.just(level)
                         .flatMap {
@@ -113,9 +114,27 @@ class TvViewModel(private val tvRepository:TvRepository):ViewModel(){
                         })
     }
 
+    fun setTvTimer(time:Int) {
+        Log.d(TAG,"set tv timer")
+        compositeDisposable.add(
+                Observable.just(time)
+                        .flatMap {
+                            if(isDeviceConnected())
+                                Observable.just(it)
+                            else
+                                Observable.error(Throwable(Status.BLUETOOTH_CONNECTION_LOST))}
+                        .flatMap {
+                            tvRepository.setTvTimer(bleConnection!!,it)
+                        }
+                        .subscribe(mTvTimer::postValue) {
+                            mBluetoothErrorStatus.postValue(Status.OPERATION_ERROR)
+                        })
+    }
+
     fun getTvConnectionStateLiveData():LiveData<RxBleConnection.RxBleConnectionState> = mTvBleConnectionState
     fun getTvPowerStateLiveDate():LiveData<BroadLinkProfile.TvProfile.State> = mTvPowerState
     fun getTvVolumeLevelLiveData():LiveData<Int> = mTvVolumeLevel
+    fun getTvTimerLiveData():LiveData<Int> = mTvTimer
     fun getTvConnectionErrorLiveData():LiveData<String> = mBluetoothErrorStatus
 
     private fun isDeviceConnected() = mTvBleConnectionState.value == RxBleConnection.RxBleConnectionState.CONNECTED

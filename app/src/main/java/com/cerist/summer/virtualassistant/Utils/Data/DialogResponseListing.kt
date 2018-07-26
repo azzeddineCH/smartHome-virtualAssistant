@@ -11,7 +11,8 @@ data class ResponseParametersListing(
         val powerState:ChatBotProfile.State? = null,
         val luminosity: ChatBotProfile.Luminosity? = null,
         val airMode: ChatBotProfile.AirMode? = null,
-        val volume: Int? = null
+        val volume: Int? = null,
+        val timer: Int? = null
 )
 
 data class ResponseIntentListing(

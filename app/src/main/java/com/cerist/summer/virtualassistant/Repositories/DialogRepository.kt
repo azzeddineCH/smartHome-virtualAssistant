@@ -4,6 +4,7 @@ import ai.api.AIDataService
 import ai.api.AIServiceException
 import ai.api.model.*
 import android.util.Log
+import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Entities.ChatBotProfile
 import com.cerist.summer.virtualassistant.Utils.Data.ResponseIntentListing
 import com.cerist.summer.virtualassistant.Utils.Data.ResponseParametersListing
@@ -163,7 +164,7 @@ class DialogRepository( private val AIService:AIDataService,
             .flatMap {
                 val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.AIR_CONDITIONER.name
                 val mode = it.parameters[ChatBotProfile.DEVICE_MODE_PARAMETER_KEY]?.asString
-                Log.d(TAG,"we are $mode")
+
                 Observable.just(Pair(device,mode))}
             .filter {
                 it.second != null }
@@ -197,7 +198,7 @@ class DialogRepository( private val AIService:AIDataService,
             .flatMap {
                 val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.TV.name
                 val number = it.parameters[ChatBotProfile.DEVICE_VOLUME_PARAMETER_KEY]?.asInt
-                Log.d(TAG,"it is $number")
+
                 Observable.just(Pair(device, number)) }
             .filter { it.second != null }
             .flatMap {
@@ -215,6 +216,41 @@ class DialogRepository( private val AIService:AIDataService,
                 val device = it.parameters[ChatBotProfile.DEVICE_NAME_PARAMETER_KEY]?.asString ?: ChatBotProfile.Device.TV.name
                 Observable.just(ResponseParametersListing(
                         device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(device))
+                ))
+            }
+            .share()
+
+
+    /**
+     * Device timer Actions
+     */
+
+    val deviceTimerSetAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
+            .filter{
+                it.action == ChatBotProfile.DEVICE_TIMER_SET_ACTION_KEY }
+            .flatMap {
+                val device = ChatBotProfile.Device.TV.name
+                val number = it.parameters[ChatBotProfile.DEVICE_TIMER_PARAMETER_KEY]?.asInt
+
+                Observable.just(Pair(device, number)) }
+            .filter { it.second != null }
+            .flatMap {
+                Log.d(TAG,"here we are")
+                Observable.just(   ResponseParametersListing(
+                        device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(it.first)),
+                        timer = it.second
+                ))
+            }
+            .share()
+
+    val deviceTimerDisableAction:Observable<ResponseParametersListing> = dialogIntentsDispatcher.observeOn(Schedulers.from(networkExecutor))
+            .filter{
+                it.action == ChatBotProfile.DEVICE_TIMER_DISABLE_ACTION_KEY }
+            .flatMap {
+                val device = ChatBotProfile.Device.TV.name
+                Observable.just(   ResponseParametersListing(
+                        device = ChatBotProfile.Device.valueOf(ChatBotProfile.parameterValueMapper(device)),
+                        timer = BroadLinkProfile.TvProfile.TV_TIMER_SET[0]
                 ))
             }
             .share()

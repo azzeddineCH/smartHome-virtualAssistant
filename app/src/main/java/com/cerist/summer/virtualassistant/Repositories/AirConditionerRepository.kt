@@ -9,6 +9,7 @@ import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.Executor
 
@@ -41,7 +42,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                             it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.STATE_CHARACTERISTIC_UUID))
                                     .toObservable()}
                         .flatMap {
-                            Observable.just(it[0].toInt()) }
+                            Observable.just(it.toString(Charset.defaultCharset()).toInt()) }
                         .flatMap {
                             when (it) {
                                 0 -> Observable.just(BroadLinkProfile.AirConditionerProfile.State.OFF)
@@ -58,7 +59,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                 it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.MODE_CHARACTERISTIC_UUID))
                         .toObservable()}
             .flatMap {
-                Observable.just(it[0].toInt()) }
+                Observable.just(it.toString(Charset.defaultCharset()).toInt()) }
             .flatMap {
                 when (it) {
                     0 -> Observable.just(BroadLinkProfile.AirConditionerProfile.Mode.SLEEP)
@@ -77,7 +78,7 @@ class AirConditionerRepository(private val broadLinkRepository: BroadLinkReposit
                 it.readCharacteristic(UUID.fromString(BroadLinkProfile.AirConditionerProfile.TEMPERATURE_UP_CHARACTERISTIC_UUID))
                         .toObservable()}
             .flatMap {
-                Observable.just(it[0].toInt()) }
+                Observable.just(it.toString(Charset.defaultCharset()).toInt()) }
             .flatMap {
                 if(it in BroadLinkProfile.AirConditionerProfile.MIN_TEMP
                         .. BroadLinkProfile.AirConditionerProfile.MAX_TEMP)

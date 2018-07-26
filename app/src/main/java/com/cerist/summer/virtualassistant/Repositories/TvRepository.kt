@@ -9,6 +9,7 @@ import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.Executor
 
@@ -36,21 +37,21 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
        =  bleConnection.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID))
             .toObservable()
             .flatMap {
-                Observable.just(it[0].toInt()) }
-            .flatMap { value ->
-                when (value) {
+                Observable.just(it.toString(Charset.defaultCharset()).toInt()) }
+            .flatMap {
+                when (it) {
                     0 -> Observable.just(BroadLinkProfile.TvProfile.State.OFF)
                     1 ->  Observable.just(BroadLinkProfile.TvProfile.State.ON)
                     else -> Observable.error(Throwable(Status.OPERATION_ERROR))
-                }
-            }
+                }}
             .share()!!
 
 
     fun getTvVolume(bleConnection: RxBleConnection)
-       = bleConnection.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID))
+       = bleConnection.readCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_CHARACTERISTIC_UUID))
             .toObservable()
-            .flatMap { Observable.just(it[0].toInt())}
+            .flatMap {
+                Observable.just(it.toString(Charset.defaultCharset()).toInt())}
             .flatMap {
                 if(it in BroadLinkProfile.TvProfile.MIN_VOLUME
                         ..BroadLinkProfile.TvProfile.MAX_VOLUME)
@@ -61,7 +62,7 @@ class TvRepository(private val broadLinkRepository: BroadLinkRepository,
 
 
 
-fun setTvPowerState(bleConnection: RxBleConnection,state: BroadLinkProfile.TvProfile.State)
+    fun setTvPowerState(bleConnection: RxBleConnection,state: BroadLinkProfile.TvProfile.State)
             = bleConnection.writeCharacteristic(
                                 UUID.fromString(BroadLinkProfile.TvProfile.STATE_CHARACTERISTIC_UUID),
                                 byteArrayOf(state.value.toByte()))
@@ -96,12 +97,32 @@ fun setTvPowerState(bleConnection: RxBleConnection,state: BroadLinkProfile.TvPro
                             byteArrayOf(volume.toByte())).toObservable()
                     else
                         bleConnection.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.VOLUME_DOWN_CHARACTERISTIC_UUID),
-                                byteArrayOf(volume.toByte())).toObservable() }
+                                byteArrayOf(volume.toByte())).toObservable()
+                                }
                 .flatMap {
                     Observable.just(it[0].toInt()) }
                 .flatMap {
                     Observable.just(it) }
                 .share()!!
 
+
+    fun setTvTimer(bleConnection: RxBleConnection,time:Int)
+        =Observable.just(bleConnection)
+            .flatMap {
+                if(time in BroadLinkProfile.TvProfile.TV_TIMER_SET)
+                    Observable.just(it)
+                else
+                    Observable.error(Throwable(Status.OPERATION_ERROR)) }
+            .flatMap {
+                Log.d(TAG,"Writing the tv timer  characteristic")
+
+                    bleConnection.writeCharacteristic(UUID.fromString(BroadLinkProfile.TvProfile.TIMER_CHARACTERISTIC_UUID),
+                            byteArrayOf(time.toByte())).toObservable()
+            }
+            .flatMap {
+                Observable.just(it[0].toInt()) }
+            .flatMap {
+                Observable.just(it) }
+            .share()!!
 
 }

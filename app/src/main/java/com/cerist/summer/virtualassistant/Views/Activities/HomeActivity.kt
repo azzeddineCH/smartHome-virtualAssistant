@@ -9,7 +9,6 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.util.Log
-import android.view.MotionEvent
 import com.cerist.summer.virtualassistant.Entities.BroadLinkProfile
 import com.cerist.summer.virtualassistant.Entities.ChatBotProfile
 import com.cerist.summer.virtualassistant.Entities.LampProfile
@@ -109,11 +108,19 @@ class HomeActivity: BaseRecognitionActivity(),
 
         })
 
+        mTvViewModel.getTvTimerLiveData().observe(this, Observer {
+            Log.d(TAG,"subscribing to the tv timer changes")
+            mTextToSpeech.speak("${getString(R.string.tv_timer_indicator)} $it",TextToSpeech.QUEUE_ADD,null,it?.hashCode().toString())
+
+        })
+
         mTvViewModel.getTvConnectionErrorLiveData().observe(this, Observer {
             Log.d(TAG,"subscribing to the tv errors changes")
             mTextToSpeech.speak(getStringResourceByName(it!!),TextToSpeech.QUEUE_ADD,null,it.hashCode().toString())
 
         })
+
+
 
 
         /**
@@ -161,7 +168,7 @@ class HomeActivity: BaseRecognitionActivity(),
          */
 
         mDialogViewModel.getDevicePowerStateSetAction().observe(this, Observer {
-            Log.d(TAG,"subscribing to the lamp power dialog")
+            Log.d(TAG,"subscribing to the power dialog")
 
             val device = it?.device
             val state  = it?.powerState !!
@@ -173,7 +180,7 @@ class HomeActivity: BaseRecognitionActivity(),
         })
 
         mDialogViewModel.getDevicePowerStateCheckAction().observe(this, Observer {
-            Log.d(TAG,"subscribing to the lamp power state check action")
+            Log.d(TAG,"subscribing to the  power state check action")
             val device = it?.device
             when(device){
                 ChatBotProfile.Device.TV -> mTvViewModel.getTvPowerState()
@@ -221,14 +228,31 @@ class HomeActivity: BaseRecognitionActivity(),
             Log.d(TAG,"subscribing to the TV volume set action")
 
             val volume = it?.volume !!
-            mTvViewModel.setTvVolumLevel(volume)
+            mTvViewModel.setTvVolumeLevel(volume)
 
         })
 
-        mDialogViewModel.getDeviceModeCheckAction().observe(this, Observer {
+        mDialogViewModel.getDeviceVolumeCheckAction().observe(this, Observer {
             Log.d(TAG,"subscribing to the TV volume check action")
-            mAirConditionerViewModel.getAirConditionerMode()
+             mTvViewModel.getTvVolumeLevel()
         })
+
+
+        /**
+         * Observing the BOT responses to the device timer actions
+         */
+
+        mDialogViewModel.getDeviceTimerSetAction().observe(this, Observer {
+            Log.d(TAG,"subscribing to the TV volume set action")
+            val time = it?.timer !!
+            mTvViewModel.setTvTimer(time)
+
+        })
+
+
+
+
+
 
 
 
@@ -279,7 +303,7 @@ class HomeActivity: BaseRecognitionActivity(),
     override fun onInit(status: Int) {
         Log.d(TAG,"onInit")
         if(status == TextToSpeech.SUCCESS){
-                 mTextToSpeech.language = Locale.UK
+                 mTextToSpeech.language = Locale.US
         }
     }
 
